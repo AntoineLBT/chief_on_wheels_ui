@@ -1,19 +1,22 @@
+/// <reference types="vite/client" />
 import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
 import { createPinia } from 'pinia'
-
-// import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import { createRouter, createWebHistory } from 'vue-router'
+import '@mdi/font/css/materialdesignicons.css'
+import App from './App.vue'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-})
+  const vuetify = createVuetify({ theme: { defaultTheme: 'light' } })
 
-const app = createApp(App)
-app.use(createPinia())
-app.use(vuetify)
-app.mount('#app')
+  const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+      { path: '/', component: () => import('@/pages/HomePage.vue') },
+    ],
+  })
+
+  const app = createApp(App)
+  app.use(createPinia())
+  app.use(vuetify)
+  app.use(router)
+  app.mount('#app')

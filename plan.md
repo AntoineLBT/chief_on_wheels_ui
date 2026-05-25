@@ -1,12 +1,12 @@
 # UI changes plan
 
 ## 1. Project setup
-- [ ] Wire Vuetify into `main.ts` (createVuetify, app.use)
-- [ ] Wire Vue Router into `main.ts` with a stub home route
-- [ ] Add ESLint + Prettier (`@vue/eslint-config-prettier`, `eslint-plugin-vue`)
-- [ ] Configure `@` path alias in `vite.config.ts` and `tsconfig.app.json`
-- [ ] Add `VITE_API_BASE_URL` to `.env` and `.env.example`
-- [ ] Install Dexie, axios, vite-plugin-pwa
+- [x] Wire Vuetify into `main.ts` (createVuetify, app.use)
+- [x] Wire Vue Router into `main.ts` with a stub home route
+- [x] Add ESLint + Prettier (`@vue/eslint-config-prettier`, `eslint-plugin-vue`)
+- [x] Configure `@` path alias in `vite.config.ts` and `tsconfig.app.json`
+- [x] Add `VITE_API_BASE_URL` to `.env` and `.env.example`
+- [x] Install Dexie, axios, vite-plugin-pwa
 
 ## 2. Auth
 - [ ] Create `src/services/apiClient.ts` — axios instance reading `VITE_API_BASE_URL`, request interceptor injects `Authorization: Bearer <token>`, response interceptor calls `/auth/refresh/` on 401 and retries once
