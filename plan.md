@@ -27,13 +27,13 @@
   - `orders`: `pk, shift, customer_name, picking_time, status, is_synced`
   - `order_recipes`: `pk, order, recipe, is_synced`
   - `order_ingredients`: `pk, order_recipe, ingredient, action_type, is_synced`
-- [ ] Add `src/services/seed.ts` — helper to populate Dexie with dev fixture data (one restaurant, a few recipes and ingredients) so the app is usable without a live API
+- [ ] xAdd `src/services/seed.ts` — helper to populate Dexie with dev fixture data (one restaurant, a few recipes and ingredients) so the app is usable without a live API
 
 ## 4. Cache layer (API → Dexie on load)
 
-- [ ] Create `src/services/cacheService.ts` — fetches `/restaurants/`, `/restaurants/{id}/recipes/`, and ingredients from the API, upserts into Dexie
-- [ ] Call `cacheService.load()` in `App.vue` `onMounted` (guard: only when authenticated and online)
-- [ ] Create `src/stores/restaurant.ts` — Pinia store loading restaurants from Dexie, exposes `current` (selected restaurant)
+- [x] Create `src/services/cacheService.ts` — fetches `/restaurants/`, `/restaurants/{id}/recipes/`, and ingredients from the API, upserts into Dexie
+- [x] Call `cacheService.load()` in `App.vue` `onMounted` (guard: only when authenticated and online)
+- [x] Create `src/stores/restaurant.ts` — Pinia store loading restaurants from Dexie, exposes `current` (selected restaurant)
 
 ## 5. Shift management
 

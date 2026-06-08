@@ -1,6 +1,6 @@
 import Dexie, { type Table } from "dexie";
 
-interface Shift {
+export interface Shift {
   pk: string;
   restaurant: string;
   date: string;
@@ -17,21 +17,21 @@ interface Order {
   is_synced: boolean;
 }
 
-interface Recipe {
+export interface Recipe {
   pk: string;
   restaurant: string;
   name: string;
   price: number;
 }
 
-interface Ingredient {
+export interface Ingredient {
   pk: string;
   restaurant: string;
   name: string;
   price_by_kg: number;
 }
 
-interface RecipeIngredient {
+export interface RecipeIngredient {
   pk: string;
   recipe: string;
   ingredient: string;
