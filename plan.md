@@ -37,9 +37,9 @@
 
 ## 5. Shift management
 
-- [ ] Create `src/stores/shift.ts` — loads shifts from Dexie filtered by current restaurant, `createShift()` writes to Dexie with `is_synced = false`, `endShift()` sets `ended_at`
-- [ ] Create `ShiftListPage.vue` — lists shifts for current restaurant, button to start a new shift, navigates into a shift
-- [ ] Create `ShiftPage.vue` — shell for the active shift, hosts the kanban board
+- [x] Create `src/stores/shift.ts` — loads shifts from Dexie filtered by current restaurant, `createShift()` writes to Dexie with `is_synced = false`, `endShift()` sets `ended_at`
+- [x] Create `ShiftListPage.vue` — lists shifts for current restaurant, button to start a new shift, navigates into a shift
+- [x] Create `ShiftPage.vue` — shell for the active shift, hosts the kanban board
 
 ## 6. Kanban board
 

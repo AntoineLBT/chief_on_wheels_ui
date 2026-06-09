@@ -11,7 +11,7 @@ export const useShiftStore = defineStore("shift", () => {
     shifts.value.find((s) => s.ended_at === null),
   );
 
-  async function load() {
+  async function loadShifts() {
     await restaurantStore.loadRestaurant();
     shifts.value = await db.shifts
       .where("restaurant")
@@ -39,5 +39,5 @@ export const useShiftStore = defineStore("shift", () => {
     if (shift) shift.ended_at = endat_at;
   }
 
-  return { shifts, activeShift, load, createShift, endShift };
+  return { shifts, activeShift, loadShifts, createShift, endShift };
 });

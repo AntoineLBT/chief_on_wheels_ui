@@ -43,6 +43,6 @@ async function onEndShift() {
 }
 
 onMounted(async () => {
-  await shiftStore.load();
+  await shiftStore.loadShifts();
 });
 </script>

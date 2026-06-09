@@ -48,6 +48,6 @@ async function onCreateShift() {
 }
 
 onMounted(async () => {
-  await shiftStore.load();
+  await shiftStore.loadShifts();
 });
 </script>
