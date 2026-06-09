@@ -13,8 +13,13 @@ const vuetify = createVuetify({ theme: { defaultTheme: "light" } });
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/", component: () => import("@/pages/HomePage.vue") },
+    { path: "/", redirect: "/shift" },
     { path: "/login", component: () => import("@/pages/LoginPage.vue") },
+    { path: "/shift", component: () => import("@/pages/ShiftListPage.vue") },
+    {
+      path: "/shift/:pk",
+      component: () => import("@/pages/ShiftPage.vue"),
+    },
   ],
 });
 
