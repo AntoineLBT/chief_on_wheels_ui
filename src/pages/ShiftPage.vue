@@ -21,10 +21,11 @@
         >
       </v-col></v-row
     >
-    <v-sheet>KANBAN</v-sheet>
+    <KanbanBoard :shift-pk="shift!.pk"></KanbanBoard>
   </v-container>
 </template>
 <script setup lang="ts">
+import KanbanBoard from "@/components/KanbanBoard.vue";
 import { useShiftStore } from "@/stores/shift";
 import { computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";

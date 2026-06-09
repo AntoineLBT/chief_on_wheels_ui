@@ -43,9 +43,9 @@
 
 ## 6. Kanban board
 
-- [ ] Create `src/stores/order.ts` — loads orders for current shift from Dexie, `createOrder()`, `updateStatus()` writes delta back to Dexie
-- [ ] Create `KanbanBoard.vue` — three columns (TODO / IN_PROGRESS / DONE), renders `OrderCard` components, drag-and-drop or arrow buttons to transition status
-- [ ] Create `OrderCard.vue` — displays customer name, picking time, recipe list, total amount
+- [x] Create `src/stores/order.ts` — loads orders for current shift from Dexie, `createOrder()`, `updateStatus()` writes delta back to Dexie
+- [x] Create `KanbanBoard.vue` — three columns (TODO / IN_PROGRESS / DONE), renders `OrderCard` components, drag-and-drop or arrow buttons to transition status
+- [x] Create `OrderCard.vue` — displays customer name, picking time, recipe list, total amount
 
 ## 7. Order creation flow
 

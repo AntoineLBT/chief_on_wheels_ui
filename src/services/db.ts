@@ -1,3 +1,4 @@
+import type { OrderStatus } from "@/utils/constant";
 import Dexie, { type Table } from "dexie";
 
 export interface Shift {
@@ -8,12 +9,12 @@ export interface Shift {
   is_synced: boolean;
 }
 
-interface Order {
+export interface Order {
   pk: string;
   shift: string;
   customer_name: string;
   picking_time: string;
-  status: "WAITING" | "IN_PROGRESS" | "DONE";
+  status: OrderStatus;
   is_synced: boolean;
 }
 
