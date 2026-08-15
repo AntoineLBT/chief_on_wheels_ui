@@ -4,6 +4,7 @@ import prettierConfig from "@vue/eslint-config-prettier";
 
 export default [
   ...pluginVue.configs["flat/recommended"],
+  ...vueTsEslintConfig(),
   prettierConfig,
   {
     rules: {
