@@ -27,7 +27,6 @@
   - `orders`: `pk, shift, customer_name, picking_time, status, is_synced`
   - `order_recipes`: `pk, order, recipe, is_synced`
   - `order_ingredients`: `pk, order_recipe, ingredient, action_type, is_synced`
-- [ ] xAdd `src/services/seed.ts` — helper to populate Dexie with dev fixture data (one restaurant, a few recipes and ingredients) so the app is usable without a live API
 
 ## 4. Cache layer (API → Dexie on load)
 
@@ -49,9 +48,8 @@
 
 ## 7. Order creation flow
 
-- [ ] Create `NewOrderDialog.vue` — customer name + picking time inputs, recipe multi-select (from Dexie), confirm writes order + order_recipes to Dexie
-- [ ] Create `IngredientCustomizationDialog.vue` — per-recipe ingredient toggle list (ADD / REMOVE delta), writes order_ingredients to Dexie
-- [ ] Wire both dialogs into `ShiftPage.vue`
+- [x] Create `NewOrderDialog.vue` — customer name + picking time inputs, recipe multi-select (from Dexie), confirm writes order + order_recipes to Dexie
+- [x] Create dialog — per-recipe ingredient toggle list (ADD / REMOVE delta), writes order_ingredients to Dexie
 
 ## 8. Sync
 

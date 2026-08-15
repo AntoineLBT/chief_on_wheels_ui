@@ -51,9 +51,12 @@ import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 import logo from "@/assets/logo.png";
+import { useRestaurantStore } from "@/stores/restaurant";
+import { load } from "@/services/cache";
 
 const showPassword = ref(false);
 const authStore = useAuthStore();
+const restaurantStore = useRestaurantStore();
 const router = useRouter();
 
 const rules = {
@@ -68,6 +71,8 @@ const error = ref("");
 async function submitLogin() {
   try {
     await authStore.login(username.value, password.value);
+    await restaurantStore.loadRestaurant();
+    await load(restaurantStore.restaurant!.pk);
     router.push("/");
   } catch {
     error.value = "Invalid username or password";

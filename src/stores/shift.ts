@@ -39,5 +39,9 @@ export const useShiftStore = defineStore("shift", () => {
     if (shift) shift.ended_at = endat_at;
   }
 
-  return { shifts, activeShift, loadShifts, createShift, endShift };
+  async function getShift(pk: string) {
+    return await db.shifts.get(pk);
+  }
+
+  return { shifts, activeShift, loadShifts, createShift, endShift, getShift };
 });

@@ -8,33 +8,34 @@
       >
       <v-col cols="2">
         <v-btn
+          v-if="!shift?.ended_at"
           prepend-icon="mdi-stop-circle-outline"
           @click="onEndShift"
-          v-if="!shift?.ended_at"
           >End shift</v-btn
         >
         <v-btn
+          v-else
           prepend-icon="mdi-backburger"
           @click="() => router.push('/shift')"
-          v-else
           >Go back</v-btn
         >
       </v-col></v-row
     >
-    <KanbanBoard :shift-pk="shift!.pk"></KanbanBoard>
+    <KanbanBoard v-if="shift" :shift-pk="shift!.pk"></KanbanBoard>
   </v-container>
 </template>
 <script setup lang="ts">
 import KanbanBoard from "@/components/KanbanBoard.vue";
 import { useShiftStore } from "@/stores/shift";
-import { computed, onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { type Shift } from "../services/db";
 
 const shiftStore = useShiftStore();
 const router = useRouter();
 
 const pk = useRoute().params.pk as string;
-const shift = computed(() => shiftStore.shifts.find((s) => s.pk === pk));
+const shift = ref<Shift>();
 
 async function onEndShift() {
   if (shift.value) {
@@ -44,6 +45,6 @@ async function onEndShift() {
 }
 
 onMounted(async () => {
-  await shiftStore.loadShifts();
+  shift.value = await shiftStore.getShift(pk);
 });
 </script>
