@@ -2,7 +2,12 @@
   <v-card class="mt-8">
     <h2>
       {{ order.customer_name }} -
-      {{ new Date(order.picking_time).toLocaleTimeString() }}
+      {{
+        new Date(order.picking_time).toLocaleTimeString(_navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      }}
     </h2>
     <v-btn v-if="order.status !== OrderStatus.done" @click="onUpdateStore"
       >Next status</v-btn
@@ -17,6 +22,8 @@ import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
 const props = defineProps<{ order: Order }>();
+
+const _navigator = navigator;
 
 async function onUpdateStore() {
   const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
