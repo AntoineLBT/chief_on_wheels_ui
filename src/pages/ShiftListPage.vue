@@ -1,11 +1,19 @@
 <template>
   <v-container>
-    <v-row class="justify-end"
-      ><v-col cols="2">
+    <v-row class="justify-end">
+      <v-col cols="2">
+        <v-btn
+          prepend-icon="mdi-save"
+          :disabled="!!!syncStore.pendingCount"
+          @click="syncStore.syncAll"
+          >Sync ({{ syncStore.pendingCount }})
+        </v-btn>
+      </v-col>
+      <v-col cols="2">
         <v-btn
           prepend-icon="mdi-chef-hat"
-          @click="onCreateShift"
           :disabled="!!shiftStore.activeShift"
+          @click="onCreateShift"
           >Create shift</v-btn
         >
       </v-col></v-row
@@ -23,8 +31,10 @@
 <script setup lang="ts">
 import type { Shift } from "@/services/db";
 import { useShiftStore } from "@/stores/shift";
+import { useSyncStore } from "@/stores/sync";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { VBtn } from "vuetify/components";
 
 const headers = [
   {
@@ -41,6 +51,7 @@ const headers = [
 
 const shiftStore = useShiftStore();
 const router = useRouter();
+const syncStore = useSyncStore();
 
 async function onCreateShift() {
   const newShift = await shiftStore.createShift();

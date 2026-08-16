@@ -30,9 +30,11 @@ import { useShiftStore } from "@/stores/shift";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { type Shift } from "../services/db";
+import { useSyncStore } from "@/stores/sync";
 
 const shiftStore = useShiftStore();
 const router = useRouter();
+const syncStore = useSyncStore();
 
 const pk = useRoute().params.pk as string;
 const shift = ref<Shift>();
@@ -40,6 +42,7 @@ const shift = ref<Shift>();
 async function onEndShift() {
   if (shift.value) {
     await shiftStore.endShift(shift.value.pk);
+    await syncStore.refreshPendingCount();
     router.push("/shift");
   }
 }
