@@ -3,6 +3,7 @@
     <v-row class="justify-end">
       <v-col cols="2">
         <v-btn
+          v-if="isOnline"
           prepend-icon="mdi-save"
           :disabled="!!!syncStore.pendingCount"
           @click="syncStore.syncAll"
@@ -29,6 +30,7 @@
   </v-container>
 </template>
 <script setup lang="ts">
+import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import type { Shift } from "@/services/db";
 import { useShiftStore } from "@/stores/shift";
 import { useSyncStore } from "@/stores/sync";
@@ -52,6 +54,7 @@ const headers = [
 const shiftStore = useShiftStore();
 const router = useRouter();
 const syncStore = useSyncStore();
+const { isOnline } = useOnlineStatus();
 
 async function onCreateShift() {
   const newShift = await shiftStore.createShift();
