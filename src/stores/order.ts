@@ -1,7 +1,12 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { type Order, type Recipe, db } from "@/services/db";
+import { type Ingredient, type Order, type Recipe, db } from "@/services/db";
 import { OrderStatus } from "@/utils/constant";
+
+export interface OrderLine {
+  recipe: Recipe;
+  modifications: { ingredient: Ingredient; action: "ADD" | "REMOVE" }[];
+}
 
 export interface CartLine {
   id: string;
@@ -16,25 +21,6 @@ export const useOrderStore = defineStore("order", () => {
     orders.value = await db.orders.where("shift").equals(shiftPk).toArray();
   }
 
-  async function createOrder(
-    shiftPk: string,
-    customerName: string,
-    pickingTime: Date,
-  ) {
-    const order: Order = {
-      pk: crypto.randomUUID(),
-      shift: shiftPk,
-      customer_name: customerName,
-      picking_time: pickingTime.toISOString(),
-      status: OrderStatus.todo,
-      is_synced: false,
-    };
-
-    await db.orders.add(order);
-    orders.value.push(order);
-    return order;
-  }
-
   async function updateStatus(orderPk: string, newStatus: OrderStatus) {
     await db.orders.update(orderPk, { status: newStatus });
     const order = orders.value.find((o) => o.pk === orderPk);
@@ -47,11 +33,20 @@ export const useOrderStore = defineStore("order", () => {
     pickingTime: Date,
     cartLines: CartLine[],
   ) {
+    const order: Order = {
+      pk: crypto.randomUUID(),
+      shift: shiftPk,
+      customer_name: customerName,
+      picking_time: pickingTime.toISOString(),
+      status: OrderStatus.todo,
+      is_synced: false,
+    };
+
     await db.transaction(
       "rw",
       [db.orders, db.orderRecipes, db.orderIngredients],
       async () => {
-        const order = await createOrder(shiftPk, customerName, pickingTime);
+        await db.orders.add(order);
 
         for (const line of cartLines) {
           const orderRecipe = {
@@ -62,7 +57,7 @@ export const useOrderStore = defineStore("order", () => {
           };
           await db.orderRecipes.add(orderRecipe);
 
-          if (line.modifications){
+          if (line.modifications) {
             for (const [ingredientPk, actionType] of Object.entries(
               line.modifications,
             )) {
@@ -76,16 +71,41 @@ export const useOrderStore = defineStore("order", () => {
             }
           }
         }
-        return order;
       },
+    );
+
+    orders.value.push(order);
+  }
+
+  async function loadOrderLines(orderPk: string): Promise<OrderLine[]> {
+    const orderRecipes = await db.orderRecipes
+      .where("order")
+      .equals(orderPk)
+      .toArray();
+
+    return Promise.all(
+      orderRecipes.map(async (or) => {
+        const recipe = await db.recipes.get(or.recipe);
+        const orderIngredients = await db.orderIngredients
+          .where("order_recipe")
+          .equals(or.pk)
+          .toArray();
+        const modifications = await Promise.all(
+          orderIngredients.map(async (oi) => ({
+            ingredient: (await db.ingredients.get(oi.ingredient))!,
+            action: oi.action_type,
+          })),
+        );
+        return { recipe: recipe!, modifications };
+      }),
     );
   }
 
   return {
     orders,
     loadOrders,
-    createOrder,
     updateStatus,
     createFullOrder,
+    loadOrderLines,
   };
 });

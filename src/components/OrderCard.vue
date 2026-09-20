@@ -19,6 +19,37 @@
       </template>
     </v-card-item>
 
+    <v-card-text class="pt-0">
+      <div v-if="order.status === OrderStatus.todo" class="text-body-2">
+        <v-icon icon="mdi-pizza" size="small" class="me-1"></v-icon>
+        {{ lines.length }} pizza{{ lines.length !== 1 ? "s" : "" }}
+      </div>
+
+      <div v-else-if="order.status === OrderStatus.inProgress">
+        <div v-for="line in lines" :key="line.recipe.pk" class="mb-1">
+          <span class="text-body-2 font-weight-medium">{{
+            line.recipe.name
+          }}</span>
+          <div
+            v-for="mod in line.modifications"
+            :key="mod.ingredient.pk"
+            class="ms-3 text-caption"
+            :class="mod.action === 'ADD' ? 'text-success' : 'text-error'"
+          >
+            {{ mod.action === "ADD" ? "+" : "-" }} {{ mod.ingredient.name }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-else-if="order.status === OrderStatus.done"
+        class="text-body-2 font-weight-bold"
+      >
+        <v-icon icon="mdi-cash" size="small" class="me-1"></v-icon>
+        {{ total }}€
+      </div>
+    </v-card-text>
+
     <v-card-actions v-if="order.status !== OrderStatus.done">
       <v-spacer></v-spacer>
       <v-btn
@@ -37,15 +68,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { type Order } from "@/services/db";
-import { useOrderStore } from "@/stores/order";
+import { useOrderStore, type OrderLine } from "@/stores/order";
 import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
 const props = defineProps<{ order: Order }>();
-
 const _navigator = navigator;
+
+const lines = ref<OrderLine[]>([]);
+
+const total = computed(() =>
+  lines.value.reduce((sum, l) => sum + l.recipe.price, 0),
+);
 
 const statusColor = computed(
   () =>
@@ -75,4 +111,11 @@ async function onUpdateStore() {
     nextStatus[props.order.status]!,
   );
 }
+
+async function reloadLines() {
+  lines.value = await orderStore.loadOrderLines(props.order.pk);
+}
+
+onMounted(reloadLines);
+watch(() => props.order.status, reloadLines);
 </script>
