@@ -15,27 +15,40 @@
       <div class="d-flex align-center mb-3">
         <v-icon :icon="col.icon" :color="col.color" class="me-2"></v-icon>
         <span class="text-subtitle-1 font-weight-bold">{{ col.label }}</span>
-        <v-chip size="x-small" class="ms-2">{{ col.orders.length }}</v-chip>
+        <v-chip size="x-small" class="ms-2">{{ columnLists[col.status].length }}</v-chip>
       </div>
       <v-divider class="mb-3"></v-divider>
-      <OrderCard
-        v-for="order in col.orders"
-        :key="order.pk"
-        :order="order"
-        class="mb-3"
-        @open="
-          () => {
-            selectedOrder = order;
-            isDetailOpen = true;
-          }
-        "
-      />
-      <div
-        v-if="!col.orders.length"
-        class="text-center text-medium-emphasis py-6"
+      <draggable
+        v-model="columnLists[col.status]"
+        group="orders"
+        item-key="pk"
+        :animation="150"
+        ghost-class="drag-ghost"
+        drag-class="drag-active"
+        class="draggable-col"
+        @change="(e) => onColumnChange(e, col.status)"
       >
-        No orders
-      </div>
+        <template #item="{ element: order }">
+          <OrderCard
+            :order="order"
+            class="mb-3"
+            @open="
+              () => {
+                selectedOrder = order;
+                isDetailOpen = true;
+              }
+            "
+          />
+        </template>
+        <template #footer>
+          <div
+            v-if="!columnLists[col.status].length"
+            class="text-center text-medium-emphasis py-6"
+          >
+            No orders
+          </div>
+        </template>
+      </draggable>
     </v-col>
   </v-row>
 
@@ -71,7 +84,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
+import draggable from "vuedraggable";
 import { useOrderStore } from "@/stores/order";
 import { OrderStatus } from "@/utils/constant";
 import OrderCard from "@/components/OrderCard.vue";
@@ -82,15 +96,28 @@ import type { Order } from "@/services/db";
 const orderStore = useOrderStore();
 const props = defineProps<{ shiftPk: string }>();
 
-const todo = computed(() =>
-  orderStore.orders.filter((o) => o.status === OrderStatus.todo),
-);
-const inProgress = computed(() =>
-  orderStore.orders.filter((o) => o.status === OrderStatus.inProgress),
-);
-const done = computed(() =>
-  orderStore.orders.filter((o) => o.status === OrderStatus.done),
-);
+// Computed with no-op setters: vuedraggable needs v-model (it considers :model-value
+// read-only and rejects drops), but the actual update is handled via @change + updateStatus.
+const todoOrders = computed({
+  get: () => orderStore.orders.filter((o) => o.status === OrderStatus.todo),
+  set: () => {},
+});
+const inProgressOrders = computed({
+  get: () =>
+    orderStore.orders.filter((o) => o.status === OrderStatus.inProgress),
+  set: () => {},
+});
+const doneOrders = computed({
+  get: () => orderStore.orders.filter((o) => o.status === OrderStatus.done),
+  set: () => {},
+});
+
+// reactive() auto-unwraps nested refs: reads return the array, writes call the computed setter.
+const columnLists = reactive({
+  [OrderStatus.todo]: todoOrders,
+  [OrderStatus.inProgress]: inProgressOrders,
+  [OrderStatus.done]: doneOrders,
+});
 
 const columns = computed(() => [
   {
@@ -98,21 +125,18 @@ const columns = computed(() => [
     label: "To do",
     icon: "mdi-clock-outline",
     color: "warning",
-    orders: todo.value,
   },
   {
     status: OrderStatus.inProgress,
     label: "In progress",
     icon: "mdi-fire",
     color: "error",
-    orders: inProgress.value,
   },
   {
     status: OrderStatus.done,
     label: "Done",
     icon: "mdi-check-circle-outline",
     color: "success",
-    orders: done.value,
   },
 ]);
 
@@ -121,7 +145,30 @@ const isDetailOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const selectedOrder = ref<Order>();
 
+function onColumnChange(
+  event: { added?: { element: Order } },
+  newStatus: OrderStatus,
+) {
+  if (event.added) {
+    orderStore.updateStatus(event.added.element.pk, newStatus);
+  }
+}
+
 onMounted(async () => {
   await orderStore.loadOrders(props.shiftPk);
 });
 </script>
+
+<style scoped>
+.draggable-col {
+  min-height: 60px;
+}
+
+.drag-ghost {
+  opacity: 0.4;
+}
+
+.drag-active {
+  cursor: grabbing !important;
+}
+</style>
