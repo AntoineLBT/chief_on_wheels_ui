@@ -1,24 +1,38 @@
 <template>
-  <v-row class="justify-end">
-    <v-col cols="2"
-      ><v-btn
+  <v-row class="justify-end mb-2">
+    <v-col cols="auto">
+      <v-btn
         prepend-icon="mdi-plus-circle-outline"
-        @click="() => (isCreateDialogOpen = !isCreateDialogOpen)"
-        >Create Order</v-btn
-      ></v-col
-    >
-  </v-row>
-  <v-row>
-    <v-col cols="4"
-      ><OrderCard v-for="order in todo" :key="order.pk" :order="order"
-    /></v-col>
-    <v-col cols="4">
-      <OrderCard v-for="order in inProgress" :key="order.pk" :order="order" />
+        color="primary"
+        @click="isCreateDialogOpen = true"
+        >New order</v-btn
+      >
     </v-col>
-    <v-col cols="4"
-      ><OrderCard v-for="order in done" :key="order.pk" :order="order"
-    /></v-col>
   </v-row>
+
+  <v-row>
+    <v-col v-for="col in columns" :key="col.status" cols="4">
+      <div class="d-flex align-center mb-3">
+        <v-icon :icon="col.icon" :color="col.color" class="me-2"></v-icon>
+        <span class="text-subtitle-1 font-weight-bold">{{ col.label }}</span>
+        <v-chip size="x-small" class="ms-2">{{ col.orders.length }}</v-chip>
+      </div>
+      <v-divider class="mb-3"></v-divider>
+      <OrderCard
+        v-for="order in col.orders"
+        :key="order.pk"
+        :order="order"
+        class="mb-3"
+      />
+      <div
+        v-if="!col.orders.length"
+        class="text-center text-medium-emphasis py-6"
+      >
+        No orders
+      </div>
+    </v-col>
+  </v-row>
+
   <v-dialog v-model="isCreateDialogOpen" max-width="75%">
     <NewOrderDialog
       :shift-pk="props.shiftPk"
@@ -35,7 +49,6 @@ import OrderCard from "@/components/OrderCard.vue";
 import NewOrderDialog from "@/components/NewOrderDialog.vue";
 
 const orderStore = useOrderStore();
-
 const props = defineProps<{ shiftPk: string }>();
 
 const todo = computed(() =>
@@ -48,7 +61,31 @@ const done = computed(() =>
   orderStore.orders.filter((o) => o.status === OrderStatus.done),
 );
 
-const isCreateDialogOpen = ref<boolean>(false);
+const columns = computed(() => [
+  {
+    status: OrderStatus.todo,
+    label: "To do",
+    icon: "mdi-clock-outline",
+    color: "warning",
+    orders: todo.value,
+  },
+  {
+    status: OrderStatus.inProgress,
+    label: "In progress",
+    icon: "mdi-fire",
+    color: "error",
+    orders: inProgress.value,
+  },
+  {
+    status: OrderStatus.done,
+    label: "Done",
+    icon: "mdi-check-circle-outline",
+    color: "success",
+    orders: done.value,
+  },
+]);
+
+const isCreateDialogOpen = ref(false);
 
 onMounted(async () => {
   await orderStore.loadOrders(props.shiftPk);
