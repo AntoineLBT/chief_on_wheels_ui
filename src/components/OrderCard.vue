@@ -1,5 +1,10 @@
 <template>
-  <v-card :border="`${statusColor} md`" rounded="lg">
+  <v-card
+    :border="`${statusColor} md`"
+    rounded="lg"
+    style="cursor: pointer"
+    @click="emit('open')"
+  >
     <v-card-item>
       <template #prepend>
         <v-icon :icon="statusIcon" :color="statusColor" size="small"></v-icon>
@@ -59,7 +64,7 @@
         :append-icon="
           order.status === OrderStatus.todo ? 'mdi-fire' : 'mdi-check'
         "
-        @click="onUpdateStore"
+        @click.stop="onUpdateStore"
       >
         {{ order.status === OrderStatus.todo ? "Start" : "Done" }}
       </v-btn>
@@ -75,6 +80,7 @@ import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
 const props = defineProps<{ order: Order }>();
+const emit = defineEmits<{ open: [] }>();
 const _navigator = navigator;
 
 const lines = ref<OrderLine[]>([]);

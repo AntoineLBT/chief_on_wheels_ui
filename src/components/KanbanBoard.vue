@@ -23,6 +23,12 @@
         :key="order.pk"
         :order="order"
         class="mb-3"
+        @open="
+          () => {
+            selectedOrder = order;
+            isDetailOpen = true;
+          }
+        "
       />
       <div
         v-if="!col.orders.length"
@@ -39,6 +45,14 @@
       @close="isCreateDialogOpen = false"
     ></NewOrderDialog>
   </v-dialog>
+
+  <v-dialog v-model="isDetailOpen" max-width="500">
+    <OrderDetailDialog
+      v-if="selectedOrder"
+      :order="selectedOrder"
+      @close="isDetailOpen = false"
+    ></OrderDetailDialog>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -47,6 +61,8 @@ import { useOrderStore } from "@/stores/order";
 import { OrderStatus } from "@/utils/constant";
 import OrderCard from "@/components/OrderCard.vue";
 import NewOrderDialog from "@/components/NewOrderDialog.vue";
+import OrderDetailDialog from "@/components/OrderDetailDialog.vue";
+import type { Order } from "@/services/db";
 
 const orderStore = useOrderStore();
 const props = defineProps<{ shiftPk: string }>();
@@ -86,6 +102,8 @@ const columns = computed(() => [
 ]);
 
 const isCreateDialogOpen = ref(false);
+const isDetailOpen = ref(false);
+const selectedOrder = ref<Order>();
 
 onMounted(async () => {
   await orderStore.loadOrders(props.shiftPk);
