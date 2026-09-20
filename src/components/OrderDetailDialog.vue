@@ -52,10 +52,40 @@
     </v-card-item>
 
     <v-card-actions>
+      <v-btn
+        v-if="order.status !== OrderStatus.done"
+        icon="mdi-pencil"
+        variant="text"
+        @click="emit('edit')"
+      ></v-btn>
+      <v-btn
+        icon="mdi-delete-outline"
+        variant="text"
+        color="error"
+        @click="confirmDelete = true"
+      ></v-btn>
       <v-spacer></v-spacer>
       <v-btn variant="text" @click="emit('close')">Close</v-btn>
     </v-card-actions>
   </v-card>
+
+  <v-dialog v-model="confirmDelete" max-width="350">
+    <v-card>
+      <v-card-title>Delete order?</v-card-title>
+      <v-card-text>
+        This will permanently delete the order for
+        <strong>{{ order.customer_name }}</strong
+        >. This cannot be undone.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="confirmDelete = false">Cancel</v-btn>
+        <v-btn color="error" variant="tonal" @click="onConfirmDelete"
+          >Delete</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -65,10 +95,11 @@ import { useOrderStore, type OrderLine } from "@/stores/order";
 import { OrderStatus } from "@/utils/constant";
 
 const props = defineProps<{ order: Order }>();
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{ close: []; edit: [] }>();
 
 const orderStore = useOrderStore();
 const lines = ref<OrderLine[]>([]);
+const confirmDelete = ref(false);
 
 const total = computed(() =>
   lines.value.reduce((sum, l) => sum + l.recipe.price, 0),
@@ -91,6 +122,11 @@ const statusIcon = computed(
       [OrderStatus.done]: "mdi-check-circle-outline",
     })[props.order.status],
 );
+
+async function onConfirmDelete() {
+  await orderStore.deleteOrder(props.order.pk);
+  emit("close");
+}
 
 onMounted(async () => {
   lines.value = await orderStore.loadOrderLines(props.order.pk);

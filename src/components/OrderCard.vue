@@ -124,4 +124,10 @@ async function reloadLines() {
 
 onMounted(reloadLines);
 watch(() => props.order.status, reloadLines);
+watch(
+  () => orderStore.lastUpdate,
+  (update) => {
+    if (update?.pk === props.order.pk) reloadLines();
+  },
+);
 </script>

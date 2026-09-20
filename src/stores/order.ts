@@ -16,6 +16,7 @@ export interface CartLine {
 
 export const useOrderStore = defineStore("order", () => {
   const orders = ref<Order[]>([]);
+  const lastUpdate = ref<{ pk: string } | null>(null);
 
   async function loadOrders(shiftPk: string) {
     orders.value = await db.orders.where("shift").equals(shiftPk).toArray();
@@ -101,11 +102,94 @@ export const useOrderStore = defineStore("order", () => {
     );
   }
 
+  async function deleteOrder(orderPk: string) {
+    await db.transaction(
+      "rw",
+      [db.orders, db.orderRecipes, db.orderIngredients],
+      async () => {
+        const orderRecipes = await db.orderRecipes
+          .where("order")
+          .equals(orderPk)
+          .toArray();
+        for (const or of orderRecipes) {
+          await db.orderIngredients
+            .where("order_recipe")
+            .equals(or.pk)
+            .delete();
+        }
+        await db.orderRecipes.where("order").equals(orderPk).delete();
+        await db.orders.delete(orderPk);
+      },
+    );
+    orders.value = orders.value.filter((o) => o.pk !== orderPk);
+  }
+
+  async function updateOrder(
+    orderPk: string,
+    customerName: string,
+    pickingTime: Date,
+    cartLines: CartLine[],
+  ) {
+    await db.transaction(
+      "rw",
+      [db.orders, db.orderRecipes, db.orderIngredients],
+      async () => {
+        const orderRecipes = await db.orderRecipes
+          .where("order")
+          .equals(orderPk)
+          .toArray();
+        for (const or of orderRecipes) {
+          await db.orderIngredients
+            .where("order_recipe")
+            .equals(or.pk)
+            .delete();
+        }
+        await db.orderRecipes.where("order").equals(orderPk).delete();
+        await db.orders.update(orderPk, {
+          customer_name: customerName,
+          picking_time: pickingTime.toISOString(),
+          is_synced: false,
+        });
+        for (const line of cartLines) {
+          const orderRecipe = {
+            pk: crypto.randomUUID(),
+            order: orderPk,
+            recipe: line.recipe.pk,
+            is_synced: false,
+          };
+          await db.orderRecipes.add(orderRecipe);
+          if (line.modifications) {
+            for (const [ingredientPk, actionType] of Object.entries(
+              line.modifications,
+            )) {
+              await db.orderIngredients.add({
+                pk: crypto.randomUUID(),
+                order_recipe: orderRecipe.pk,
+                ingredient: ingredientPk,
+                action_type: actionType,
+                is_synced: false,
+              });
+            }
+          }
+        }
+      },
+    );
+    const order = orders.value.find((o) => o.pk === orderPk);
+    if (order) {
+      order.customer_name = customerName;
+      order.picking_time = pickingTime.toISOString();
+    }
+    lastUpdate.value = { pk: orderPk };
+  }
+
   return {
     orders,
+    lastUpdate,
     loadOrders,
     updateStatus,
     createFullOrder,
+    updateOrder,
+    deleteOrder,
     loadOrderLines,
   };
 });

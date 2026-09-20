@@ -46,11 +46,26 @@
     ></NewOrderDialog>
   </v-dialog>
 
+  <v-dialog v-model="isEditDialogOpen" max-width="75%">
+    <NewOrderDialog
+      v-if="selectedOrder"
+      :shift-pk="props.shiftPk"
+      :order="selectedOrder"
+      @close="isEditDialogOpen = false"
+    ></NewOrderDialog>
+  </v-dialog>
+
   <v-dialog v-model="isDetailOpen" max-width="500">
     <OrderDetailDialog
       v-if="selectedOrder"
       :order="selectedOrder"
       @close="isDetailOpen = false"
+      @edit="
+        () => {
+          isDetailOpen = false;
+          isEditDialogOpen = true;
+        }
+      "
     ></OrderDetailDialog>
   </v-dialog>
 </template>
@@ -103,6 +118,7 @@ const columns = computed(() => [
 
 const isCreateDialogOpen = ref(false);
 const isDetailOpen = ref(false);
+const isEditDialogOpen = ref(false);
 const selectedOrder = ref<Order>();
 
 onMounted(async () => {

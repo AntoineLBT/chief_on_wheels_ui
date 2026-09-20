@@ -1,6 +1,12 @@
 <template>
-  <v-card prepend-icon="mdi-receipt-text-plus" title="New Order" min-width="600">
-    <v-card-subtitle class="mt-1">Select recipes to add to the order</v-card-subtitle>
+  <v-card
+    prepend-icon="mdi-receipt-text-plus"
+    :title="isEditMode ? 'Edit Order' : 'New Order'"
+    min-width="600"
+  >
+    <v-card-subtitle class="mt-1"
+      >Select recipes to add to the order</v-card-subtitle
+    >
 
     <v-card-text>
       <v-row>
@@ -46,7 +52,12 @@
                     variant="text"
                     density="comfortable"
                     size="small"
-                    @click="() => { editingLine = line; isEditRecipeOpen = true; }"
+                    @click="
+                      () => {
+                        editingLine = line;
+                        isEditRecipeOpen = true;
+                      }
+                    "
                   ></v-btn>
                   <v-btn
                     icon="mdi-close"
@@ -97,7 +108,10 @@
               </v-menu>
             </v-text-field>
           </v-col>
-          <v-col cols="4" class="d-flex justify-end align-center text-h5 font-weight-bold">
+          <v-col
+            cols="4"
+            class="d-flex justify-end align-center text-h5 font-weight-bold"
+          >
             {{ total }}€
           </v-col>
         </v-row>
@@ -112,7 +126,8 @@
         variant="tonal"
         :disabled="!isValid"
         @click="onSubmitOrder"
-      >Create</v-btn>
+        >Create</v-btn
+      >
     </v-card-actions>
   </v-card>
 
@@ -133,14 +148,16 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" variant="tonal" @click="isEditRecipeOpen = false">Done</v-btn>
+        <v-btn color="primary" variant="tonal" @click="isEditRecipeOpen = false"
+          >Done</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import type { Recipe, Shift } from "@/services/db";
+import type { Order, Recipe, Shift } from "@/services/db";
 import { useIngredientStore } from "@/stores/ingredient";
 import { useOrderStore, type CartLine } from "@/stores/order";
 import { useRecipeStore } from "@/stores/recipe";
@@ -148,8 +165,10 @@ import { useShiftStore } from "@/stores/shift";
 import { computed, onMounted, ref } from "vue";
 import { useRecipeIngredientStore } from "../stores/recipeIngredient";
 
-const props = defineProps<{ shiftPk: string }>();
+const props = defineProps<{ shiftPk: string; order?: Order }>();
 const emit = defineEmits<{ close: [] }>();
+
+const isEditMode = computed(() => !!props.order);
 
 const shift = ref<Shift>();
 const recipeStore = useRecipeStore();
@@ -171,7 +190,10 @@ const total = computed(() =>
 );
 
 const isValid = computed(
-  () => cartLines.value.length > 0 && customerName.value.trim() && pickingTime.value,
+  () =>
+    cartLines.value.length > 0 &&
+    customerName.value.trim() &&
+    pickingTime.value,
 );
 
 function addToCart(recipe: Recipe) {
@@ -216,12 +238,21 @@ async function onSubmitOrder() {
   const [hours, minutes] = pickingTime.value.split(":").map(Number);
   const pickingDate = new Date();
   pickingDate.setHours(hours!, minutes, 0, 0);
-  await orderStore.createFullOrder(
-    shift.value!.pk,
-    customerName.value,
-    pickingDate,
-    cartLines.value,
-  );
+  if (isEditMode.value) {
+    await orderStore.updateOrder(
+      props.order!.pk,
+      customerName.value,
+      pickingDate,
+      cartLines.value,
+    );
+  } else {
+    await orderStore.createFullOrder(
+      shift.value!.pk,
+      customerName.value,
+      pickingDate,
+      cartLines.value,
+    );
+  }
   emit("close");
 }
 
@@ -232,5 +263,18 @@ onMounted(async () => {
   await recipeIngredientStore.loadRecipeIngredients(
     recipeStore.recipes.map((r) => r.pk),
   );
+  if (props.order) {
+    customerName.value = props.order.customer_name;
+    const d = new Date(props.order.picking_time);
+    pickingTime.value = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    const lines = await orderStore.loadOrderLines(props.order.pk);
+    cartLines.value = lines.map((l) => ({
+      id: crypto.randomUUID(),
+      recipe: l.recipe,
+      modifications: Object.fromEntries(
+        l.modifications.map((m) => [m.ingredient.pk, m.action]),
+      ),
+    }));
+  }
 });
 </script>
