@@ -7,7 +7,12 @@
       </v-app-bar-title>
 
       <template #append>
-        <v-chip v-if="!isOnline" color="warning" prepend-icon="mdi-wifi-off" class="me-2">
+        <v-chip
+          v-if="!isOnline"
+          color="warning"
+          prepend-icon="mdi-wifi-off"
+          class="me-2"
+        >
           Offline
         </v-chip>
         <v-btn
