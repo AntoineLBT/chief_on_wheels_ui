@@ -53,16 +53,16 @@
 
 ## 8. Sync
 
-- [ ] Create `src/services/syncService.ts` — queries Dexie for `is_synced = false` shifts (with nested orders/order_recipes/order_ingredients), POSTs to `/sync/`, marks records `is_synced = true` on success
-- [ ] Create `src/stores/sync.ts` — exposes `pendingCount` (unsynced shift count), `isSyncing`, `sync()`
-- [ ] Add a sync button in the app bar showing `pendingCount`, disabled when offline or already syncing
+- [x] Create `src/services/syncService.ts` — queries Dexie for `is_synced = false` shifts (with nested orders/order_recipes/order_ingredients), POSTs to `/sync/`, marks records `is_synced = true` on success
+- [x] Create `src/stores/sync.ts` — exposes `pendingCount` (unsynced shift count), `isSyncing`, `sync()`
+- [x] Add a sync button in the app bar showing `pendingCount`, disabled when offline or already syncing
 
 ## 9. PWA shell + offline validation
 
-- [ ] Configure `vite-plugin-pwa` in `vite.config.ts` — manifest (name, icons, `display: standalone`, `theme_color`), Workbox `GenerateSW` with `networkFirst` for API calls and `cacheFirst` for static assets
-- [ ] Add `src/composables/useOnlineStatus.ts` — wraps `navigator.onLine` + `online`/`offline` events, returns reactive `isOnline`
-- [ ] Show offline banner in `App.vue` when `!isOnline`
-- [ ] Validate full offline flow: load app, disable network, create a shift + orders, re-enable network, sync
+- [x] Configure `vite-plugin-pwa` in `vite.config.ts` — manifest (name, icons, `display: standalone`, `theme_color`), Workbox `GenerateSW` with `networkFirst` for API calls and `cacheFirst` for static assets
+- [x] Add `src/composables/useOnlineStatus.ts` — wraps `navigator.onLine` + `online`/`offline` events, returns reactive `isOnline`
+- [x] Show offline banner in `App.vue` when `!isOnline`
+- [x] Validate full offline flow: load app, disable network, create a shift + orders, re-enable network, sync
 
 ## 10. Thermal printer
 
