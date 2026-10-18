@@ -1,9 +1,14 @@
 <template>
   <v-layout>
     <v-app-bar color="primary" elevation="2">
+      <template #prepend>
+        <v-app-bar-nav-icon
+          @click="isDrawerOpen = !isDrawerOpen"
+        ></v-app-bar-nav-icon>
+      </template>
       <v-app-bar-title>
         <v-icon icon="mdi-chef-hat" class="me-2"></v-icon>
-        Chief on Wheels
+        {{ currentRestaurant?.name ?? "Chief on Wheels" }}
       </v-app-bar-title>
 
       <template #append>
@@ -59,6 +64,34 @@
       </template>
     </v-app-bar>
 
+    <v-navigation-drawer v-model="isDrawerOpen">
+      <v-list nav>
+        <v-list-subheader>Restaurants</v-list-subheader>
+        <v-list-item
+          v-for="restaurant in sortedRestaurants"
+          :key="restaurant.pk"
+          :title="restaurant.name"
+          :to="`/restaurants/${restaurant.pk}`"
+          prepend-icon="mdi-store-outline"
+          color="primary"
+        ></v-list-item>
+      </v-list>
+
+      <template #append>
+        <div class="pa-2">
+          <v-btn
+            block
+            prepend-icon="mdi-plus"
+            color="primary"
+            variant="tonal"
+            :disabled="!isOnline"
+            @click="isCreateDialogOpen = true"
+            >New restaurant</v-btn
+          >
+        </div>
+      </template>
+    </v-navigation-drawer>
+
     <v-main>
       <slot />
     </v-main>
@@ -68,14 +101,30 @@
 <script setup lang="ts">
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useAuthStore } from "@/stores/auth";
+import { useRestaurantStore } from "@/stores/restaurant";
 import { useSyncStore } from "@/stores/sync";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const authStore = useAuthStore();
 const syncStore = useSyncStore();
+const restaurantStore = useRestaurantStore();
 const router = useRouter();
+const route = useRoute();
 const { isOnline } = useOnlineStatus();
+
+// null lets Vuetify open the drawer on large screens and close it on mobile.
+const isDrawerOpen = ref<boolean | null>(null);
+// Wired to the creation dialog in plan step 1.8.
+const isCreateDialogOpen = ref(false);
+
+const sortedRestaurants = computed(() =>
+  [...restaurantStore.restaurants].sort((a, b) => a.name.localeCompare(b.name)),
+);
+
+const currentRestaurant = computed(() =>
+  restaurantStore.restaurants.find((r) => r.pk === route.params.restaurantId),
+);
 
 type FontSize = "small" | "medium" | "large";
 
@@ -110,7 +159,8 @@ function onLogout() {
   router.push("/login");
 }
 
-onMounted(() => {
+onMounted(async () => {
   applyFontSize(fontSize.value);
+  await restaurantStore.loadRestaurants();
 });
 </script>
