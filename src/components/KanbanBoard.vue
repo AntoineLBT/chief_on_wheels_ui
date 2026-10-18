@@ -26,7 +26,7 @@
         ghost-class="drag-ghost"
         drag-class="drag-active"
         class="draggable-col"
-        @change="(e) => onColumnChange(e, col.status)"
+        @change="(e: DraggableChangeEvent) => onColumnChange(e, col.status)"
       >
         <template #item="{ element: order }">
           <OrderCard
@@ -145,8 +145,10 @@ const isDetailOpen = ref(false);
 const isEditDialogOpen = ref(false);
 const selectedOrder = ref<Order>();
 
+type DraggableChangeEvent = { added?: { element: Order } };
+
 function onColumnChange(
-  event: { added?: { element: Order } },
+  event: DraggableChangeEvent,
   newStatus: OrderStatus,
 ) {
   if (event.added) {
