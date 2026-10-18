@@ -92,6 +92,12 @@
       </template>
     </v-navigation-drawer>
 
+    <v-dialog v-model="isCreateDialogOpen" max-width="400">
+      <NewRestaurantDialog
+        @close="isCreateDialogOpen = false"
+      ></NewRestaurantDialog>
+    </v-dialog>
+
     <v-main>
       <slot />
     </v-main>
@@ -99,6 +105,7 @@
 </template>
 
 <script setup lang="ts">
+import NewRestaurantDialog from "@/components/NewRestaurantDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useAuthStore } from "@/stores/auth";
 import { useRestaurantStore } from "@/stores/restaurant";
@@ -115,7 +122,6 @@ const { isOnline } = useOnlineStatus();
 
 // null lets Vuetify open the drawer on large screens and close it on mobile.
 const isDrawerOpen = ref<boolean | null>(null);
-// Wired to the creation dialog in plan step 1.8.
 const isCreateDialogOpen = ref(false);
 
 const sortedRestaurants = computed(() =>
