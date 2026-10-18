@@ -29,7 +29,7 @@ const router = createRouter({
       path: "/restaurants/:restaurantId",
       component: () => import("@/pages/RestaurantPage.vue"),
       children: [
-        { path: "", redirect: { name: "restaurant-accounting" } },
+        { path: "", redirect: { name: "restaurant-ingredients" } },
         {
           path: "accounting",
           name: "restaurant-accounting",
