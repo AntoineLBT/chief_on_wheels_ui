@@ -1,10 +1,10 @@
-import type { OrderStatus } from "@/utils/constant";
+import type { IngredientUnit, OrderStatus } from "@/utils/constant";
 import Dexie, { type Table } from "dexie";
 
 export interface Restaurant {
   pk: string;
   name: string;
-  vat_rate: string;
+  vat_rate: number;
 }
 
 export interface Shift {
@@ -35,7 +35,13 @@ export interface Ingredient {
   pk: string;
   restaurant: string;
   name: string;
-  price_by_kg: number;
+  unit: IngredientUnit;
+  price_per_unit: number;
+  has_extra: boolean;
+  /** Charged to the customer on each ADD; null unless has_extra. */
+  extra_price: number | null;
+  /** Portion of an extra, in the base unit (g / ml / piece); null unless has_extra. */
+  extra_quantity: number | null;
 }
 
 export interface RecipeIngredient {

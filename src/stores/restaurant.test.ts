@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import api from "@/services/apiClient";
 import { db } from "@/services/db";
 import { useRestaurantStore } from "@/stores/restaurant";
-import { OrderStatus } from "@/utils/constant";
+import { IngredientUnit, OrderStatus } from "@/utils/constant";
 import { clearDb } from "@/test/db";
 
 vi.mock("@/services/apiClient", () => ({
@@ -11,7 +11,7 @@ vi.mock("@/services/apiClient", () => ({
 }));
 
 function restaurant(pk: string, name: string) {
-  return { pk, name, vat_rate: "0.00", owner: 1 };
+  return { pk, name, vat_rate: 0, owner: 1 };
 }
 
 async function seedRestaurant(pk: string) {
@@ -20,7 +20,11 @@ async function seedRestaurant(pk: string) {
     pk: `${pk}-ingredient`,
     restaurant: pk,
     name: "Tomate",
-    price_by_kg: 4,
+    unit: IngredientUnit.kg,
+    price_per_unit: 4,
+    has_extra: false,
+    extra_price: null,
+    extra_quantity: null,
   });
   await db.recipes.add({
     pk: `${pk}-recipe`,

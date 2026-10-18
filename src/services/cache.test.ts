@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 import { useRestaurantStore } from "@/stores/restaurant";
 import { useRecipeStore } from "@/stores/recipe";
 import { useShiftStore } from "@/stores/shift";
+import { IngredientUnit } from "@/utils/constant";
 import { clearDb } from "@/test/db";
 
 vi.mock("@/services/apiClient", () => ({
@@ -13,7 +14,7 @@ vi.mock("@/services/apiClient", () => ({
 }));
 
 function restaurant(pk: string, name: string) {
-  return { pk, name, vat_rate: "0.00", owner: 1 };
+  return { pk, name, vat_rate: 0, owner: 1 };
 }
 
 function recipe(pk: string, restaurantPk: string, name: string) {
@@ -38,7 +39,11 @@ function ingredient(restaurantPk: string) {
     pk: `${restaurantPk}-tomate`,
     restaurant: restaurantPk,
     name: "Tomate",
-    price_by_kg: 4,
+    unit: IngredientUnit.kg,
+    price_per_unit: 4,
+    has_extra: false,
+    extra_price: null,
+    extra_quantity: null,
   };
 }
 
