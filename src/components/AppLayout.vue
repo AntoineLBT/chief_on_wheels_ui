@@ -3,7 +3,7 @@
     <v-app-bar color="primary" elevation="2">
       <v-app-bar-title>
         <v-icon icon="mdi-chef-hat" class="me-2"></v-icon>
-        {{ restaurantStore.restaurant?.name ?? "Chief on Wheels" }}
+        Chief on Wheels
       </v-app-bar-title>
 
       <template #append>
@@ -68,13 +68,11 @@
 <script setup lang="ts">
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useAuthStore } from "@/stores/auth";
-import { useRestaurantStore } from "@/stores/restaurant";
 import { useSyncStore } from "@/stores/sync";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
-const restaurantStore = useRestaurantStore();
 const syncStore = useSyncStore();
 const router = useRouter();
 const { isOnline } = useOnlineStatus();

@@ -1,28 +1,25 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { type Shift, db } from "@/services/db";
-import { useRestaurantStore } from "./restaurant";
 
 export const useShiftStore = defineStore("shift", () => {
-  const restaurantStore = useRestaurantStore();
   const shifts = ref<Shift[]>([]);
 
   const activeShift = computed(() =>
     shifts.value.find((s) => s.ended_at === null),
   );
 
-  async function loadShifts() {
-    await restaurantStore.loadRestaurant();
+  async function loadShifts(restaurantPk: string) {
     shifts.value = await db.shifts
       .where("restaurant")
-      .equals(restaurantStore.restaurant!.pk)
+      .equals(restaurantPk)
       .toArray();
   }
 
-  async function createShift() {
+  async function createShift(restaurantPk: string) {
     const shift: Shift = {
       pk: crypto.randomUUID(),
-      restaurant: restaurantStore.restaurant!.pk,
+      restaurant: restaurantPk,
       date: new Date().toISOString(),
       ended_at: null,
       is_synced: false,

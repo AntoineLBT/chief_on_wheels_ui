@@ -1,23 +1,27 @@
 import api from "@/services/apiClient";
+import { type Restaurant, db, purgeRestaurant } from "@/services/db";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-export interface Restaurant {
-  pk: string;
-  name: string;
-  type: string;
-}
-
 export const useRestaurantStore = defineStore("restaurant", () => {
-  const restaurant = ref<Restaurant | null>(
-    JSON.parse(localStorage.getItem("restaurant") ?? "null"),
-  );
+  const restaurants = ref<Restaurant[]>([]);
 
-  async function loadRestaurant() {
-    const response = await api.get("/restaurants/");
-    restaurant.value = response.data[0];
-    localStorage.setItem("restaurant", JSON.stringify(response.data[0]));
+  async function loadRestaurants() {
+    restaurants.value = await db.restaurants.toArray();
   }
 
-  return { restaurant, loadRestaurant };
+  async function create(name: string) {
+    const { data } = await api.post<Restaurant>("/restaurants/", { name });
+    await db.restaurants.put(data);
+    restaurants.value.push(data);
+    return data;
+  }
+
+  async function remove(pk: string) {
+    await api.delete(`/restaurants/${pk}/`);
+    await purgeRestaurant(pk);
+    restaurants.value = restaurants.value.filter((r) => r.pk !== pk);
+  }
+
+  return { restaurants, loadRestaurants, create, remove };
 });

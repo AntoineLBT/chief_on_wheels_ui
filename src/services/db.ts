@@ -1,6 +1,12 @@
 import type { OrderStatus } from "@/utils/constant";
 import Dexie, { type Table } from "dexie";
 
+export interface Restaurant {
+  pk: string;
+  name: string;
+  vat_rate: string;
+}
+
 export interface Shift {
   pk: string;
   restaurant: string;
@@ -55,6 +61,7 @@ interface OrderIngredient {
 }
 
 class ChiefDatabase extends Dexie {
+  restaurants!: Table<Restaurant>;
   shifts!: Table<Shift>;
   orders!: Table<Order>;
   recipes!: Table<Recipe>;
@@ -66,6 +73,7 @@ class ChiefDatabase extends Dexie {
   constructor() {
     super("chief");
     this.version(1).stores({
+      restaurants: "pk",
       shifts: "pk, restaurant, is_synced",
       orders: "pk, shift, is_synced",
       recipes: "pk, restaurant",
@@ -77,3 +85,35 @@ class ChiefDatabase extends Dexie {
   }
 }
 export const db = new ChiefDatabase();
+
+export async function purgeRestaurant(restaurantPk: string) {
+  await db.transaction("rw", db.tables, async () => {
+    const shiftPks = await db.shifts
+      .where("restaurant")
+      .equals(restaurantPk)
+      .primaryKeys();
+    const orderPks = await db.orders
+      .where("shift")
+      .anyOf(shiftPks)
+      .primaryKeys();
+    const orderRecipePks = await db.orderRecipes
+      .where("order")
+      .anyOf(orderPks)
+      .primaryKeys();
+    const recipePks = await db.recipes
+      .where("restaurant")
+      .equals(restaurantPk)
+      .primaryKeys();
+
+    await Promise.all([
+      db.orderIngredients.where("order_recipe").anyOf(orderRecipePks).delete(),
+      db.orderRecipes.bulkDelete(orderRecipePks),
+      db.orders.bulkDelete(orderPks),
+      db.shifts.bulkDelete(shiftPks),
+      db.recipeIngredients.where("recipe").anyOf(recipePks).delete(),
+      db.recipes.bulkDelete(recipePks),
+      db.ingredients.where("restaurant").equals(restaurantPk).delete(),
+      db.restaurants.delete(restaurantPk),
+    ]);
+  });
+}

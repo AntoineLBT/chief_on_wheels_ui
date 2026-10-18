@@ -74,6 +74,7 @@
 <script setup lang="ts">
 import AppLayout from "@/components/AppLayout.vue";
 import type { Shift } from "@/services/db";
+import { useRestaurantStore } from "@/stores/restaurant";
 import { useShiftStore } from "@/stores/shift";
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -88,6 +89,9 @@ const headers = [
 ];
 
 const shiftStore = useShiftStore();
+const restaurantStore = useRestaurantStore();
+// Temporary until the restaurant comes from the URL (plan step 1.6).
+const restaurantPk = computed(() => restaurantStore.restaurants[0]?.pk);
 const router = useRouter();
 
 const sortedShifts = computed(() =>
@@ -97,11 +101,13 @@ const sortedShifts = computed(() =>
 );
 
 async function onCreateShift() {
-  const newShift = await shiftStore.createShift();
+  if (!restaurantPk.value) return;
+  const newShift = await shiftStore.createShift(restaurantPk.value);
   router.push(`/shift/${newShift.pk}`);
 }
 
 onMounted(async () => {
-  await shiftStore.loadShifts();
+  await restaurantStore.loadRestaurants();
+  if (restaurantPk.value) await shiftStore.loadShifts(restaurantPk.value);
 });
 </script>
