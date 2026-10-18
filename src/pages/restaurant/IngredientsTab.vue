@@ -97,7 +97,13 @@
           type="error"
           variant="tonal"
           :text="deleteError"
-        ></v-alert>
+        >
+          <ul v-if="usingRecipes.length" class="mt-2 ml-4">
+            <li v-for="recipe in usingRecipes" :key="recipe.pk">
+              {{ recipe.name }}
+            </li>
+          </ul>
+        </v-alert>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -119,7 +125,11 @@
 import IngredientDialog from "@/components/IngredientDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import type { Ingredient } from "@/services/db";
-import { IngredientInUseError, useIngredientStore } from "@/stores/ingredient";
+import {
+  IngredientInUseError,
+  type RecipeRef,
+  useIngredientStore,
+} from "@/stores/ingredient";
 import {
   ingredientBaseUnitLabels,
   ingredientUnitLabels,
@@ -159,10 +169,12 @@ const isDeleteOpen = ref(false);
 const isDeleting = ref(false);
 const deletedIngredient = ref<Ingredient | null>(null);
 const deleteError = ref("");
+const usingRecipes = ref<RecipeRef[]>([]);
 
 function openDelete(ingredient: Ingredient) {
   deletedIngredient.value = ingredient;
   deleteError.value = "";
+  usingRecipes.value = [];
   isDeleteOpen.value = true;
 }
 
@@ -173,8 +185,9 @@ async function onDelete() {
     isDeleteOpen.value = false;
   } catch (error) {
     if (error instanceof IngredientInUseError) {
-      deleteError.value = error.recipeCount
-        ? `Used in ${error.recipeCount} recipe(s): remove it from them first.`
+      usingRecipes.value = error.recipes;
+      deleteError.value = error.recipes.length
+        ? "Used in these recipes, remove it from them first:"
         : "Used in past orders: it cannot be deleted.";
     } else {
       deleteError.value =

@@ -6,9 +6,15 @@ import { ref } from "vue";
 
 export type IngredientInput = Omit<Ingredient, "pk" | "restaurant">;
 
+export interface RecipeRef {
+  pk: string;
+  name: string;
+}
+
 export class IngredientInUseError extends Error {
-  constructor(readonly recipeCount: number) {
-    super(`Ingredient used in ${recipeCount} recipe(s)`);
+  /** Recipes using the ingredient; empty when only past orders use it. */
+  constructor(readonly recipes: RecipeRef[]) {
+    super(`Ingredient used in ${recipes.length} recipe(s)`);
     this.name = "IngredientInUseError";
   }
 }
@@ -64,7 +70,7 @@ export const useIngredientStore = defineStore("ingredient", () => {
       await api.delete(await url(ingredientPk));
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 409) {
-        throw new IngredientInUseError(error.response.data.recipe_count);
+        throw new IngredientInUseError(error.response.data.recipes);
       }
       throw error;
     }

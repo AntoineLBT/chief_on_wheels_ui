@@ -85,14 +85,14 @@ describe("useIngredientStore", () => {
     expect((await reloadedIngredients()).map((i) => i.pk)).toEqual(["i2"]);
   });
 
-  it("keeps an ingredient still in use and tells in how many recipes", async () => {
+  it("keeps an ingredient still in use and tells which recipes use it", async () => {
     await db.ingredients.add(ingredient("i1"));
     vi.mocked(api.delete).mockRejectedValue(
       new AxiosError("Conflict", "ERR_BAD_REQUEST", undefined, undefined, {
         status: 409,
         data: {
           detail: "Ingredient used in recipes or orders.",
-          recipe_count: 3,
+          recipes: [{ pk: "rc1", name: "Calzone" }],
         },
       } as AxiosResponse),
     );
@@ -102,7 +102,7 @@ describe("useIngredientStore", () => {
     const error = await store.remove("i1").catch((e) => e);
 
     expect(error).toBeInstanceOf(IngredientInUseError);
-    expect(error.recipeCount).toBe(3);
+    expect(error.recipes).toEqual([{ pk: "rc1", name: "Calzone" }]);
     expect(store.ingredients.map((i) => i.pk)).toEqual(["i1"]);
     expect((await reloadedIngredients()).map((i) => i.pk)).toEqual(["i1"]);
   });
