@@ -11,19 +11,20 @@ describe("ingredientCost", () => {
   it("prices grams of an ingredient sold by the kilo", () => {
     const mozzarella = { unit: IngredientUnit.kg, price_per_unit: 12.5 };
 
-    expect(ingredientCost(mozzarella, 80)).toBeCloseTo(1);
+    expect(ingredientCost(mozzarella, 80)).toBe(1);
   });
 
-  it("prices millilitres of an ingredient sold by the litre", () => {
+  it("prices millilitres of an ingredient sold by the litre, to the cent", () => {
     const oliveOil = { unit: IngredientUnit.l, price_per_unit: 9 };
 
-    expect(ingredientCost(oliveOil, 15)).toBeCloseTo(0.135);
+    // 13.5 cents, rounded half up.
+    expect(ingredientCost(oliveOil, 15)).toBe(0.14);
   });
 
   it("prices pieces of an ingredient sold by the unit", () => {
     const egg = { unit: IngredientUnit.unit, price_per_unit: 0.3 };
 
-    expect(ingredientCost(egg, 2)).toBeCloseTo(0.6);
+    expect(ingredientCost(egg, 2)).toBe(0.6);
   });
 });
 
@@ -42,8 +43,8 @@ describe("recipeCost", () => {
       { ingredient: "oeuf", quantity: 2 },
     ];
 
-    // 1.00 + 0.135 + 0.60, unrounded (the API rounds it to 1.74).
-    expect(recipeCost(lines, ingredients)).toBeCloseTo(1.735, 6);
+    // 100 + 13.5 + 60 = 173.5 cents, rounded once: same as the API cost.
+    expect(recipeCost(lines, ingredients)).toBe(1.74);
   });
 
   it("costs nothing without ingredients", () => {
