@@ -10,7 +10,7 @@
 
     <v-card-text>
       <v-row>
-        <v-col v-for="recipe in recipeStore.recipes" :key="recipe.pk" cols="3">
+        <v-col v-for="recipe in activeRecipes" :key="recipe.pk" cols="3">
           <v-btn block variant="tonal" @click="addToCart(recipe)">
             <div>
               <div>{{ recipe.name }}</div>
@@ -172,6 +172,10 @@ const isEditMode = computed(() => !!props.order);
 
 const shift = ref<Shift>();
 const recipeStore = useRecipeStore();
+// Inactive recipes stay cached (past orders reference them) but cannot be ordered.
+const activeRecipes = computed(() =>
+  recipeStore.recipes.filter((recipe) => recipe.is_active),
+);
 const ingredientStore = useIngredientStore();
 const shiftStore = useShiftStore();
 const recipeIngredientStore = useRecipeIngredientStore();
