@@ -134,6 +134,7 @@ import {
   ingredientBaseUnitLabels,
   ingredientUnitLabels,
 } from "@/utils/constant";
+import { formatPrice } from "@/utils/format";
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
@@ -150,10 +151,6 @@ watch(restaurantPk, (pk) => ingredientStore.loadIngredients(pk), {
 const sortedIngredients = computed(() =>
   [...ingredientStore.ingredients].sort((a, b) => a.name.localeCompare(b.name)),
 );
-
-function formatPrice(value: number) {
-  return `${value.toFixed(2)} €`;
-}
 
 const isFormOpen = ref(false);
 const formKey = ref(0);
