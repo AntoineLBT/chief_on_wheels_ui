@@ -123,6 +123,36 @@
     </tbody>
   </v-table>
 
+  <v-divider class="my-6"></v-divider>
+
+  <v-card variant="outlined" color="error">
+    <v-card-item
+      prepend-icon="mdi-alert-outline"
+      title="Danger zone"
+      subtitle="Deleting the restaurant cannot be undone."
+    >
+      <template #append>
+        <v-btn
+          color="error"
+          variant="tonal"
+          prepend-icon="mdi-delete-outline"
+          :disabled="!isOnline || !restaurant"
+          @click="openDeleteRestaurant"
+          >Delete restaurant</v-btn
+        >
+      </template>
+    </v-card-item>
+  </v-card>
+
+  <v-dialog v-model="isDeleteRestaurantOpen" max-width="450">
+    <DeleteRestaurantDialog
+      v-if="restaurant"
+      :key="deleteRestaurantKey"
+      :restaurant="restaurant"
+      @close="isDeleteRestaurantOpen = false"
+    ></DeleteRestaurantDialog>
+  </v-dialog>
+
   <v-dialog v-model="isFormOpen" max-width="500">
     <FixedChargeDialog
       :key="formKey"
@@ -174,6 +204,7 @@
 </template>
 
 <script setup lang="ts">
+import DeleteRestaurantDialog from "@/components/DeleteRestaurantDialog.vue";
 import FixedChargeDialog from "@/components/FixedChargeDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { type FixedCharge, useFixedChargeStore } from "@/stores/fixedCharge";
@@ -248,6 +279,14 @@ async function onSaveRestaurant() {
   } finally {
     isSavingRestaurant.value = false;
   }
+}
+
+const isDeleteRestaurantOpen = ref(false);
+const deleteRestaurantKey = ref(0);
+
+function openDeleteRestaurant() {
+  deleteRestaurantKey.value++;
+  isDeleteRestaurantOpen.value = true;
 }
 
 // Fixed charges (online only, not cached)

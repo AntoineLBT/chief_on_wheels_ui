@@ -175,4 +175,24 @@ describe("useRestaurantStore", () => {
     expect(store.restaurants.map((r) => r.pk)).toEqual(["r1"]);
     expect(await localPksOf("r1")).toHaveLength(8);
   });
+
+  it("counts the unsynced shifts of a restaurant", async () => {
+    const shift = (pk: string, restaurant: string, is_synced: boolean) => ({
+      pk,
+      restaurant,
+      date: "2026-10-18T10:00:00.000Z",
+      ended_at: null,
+      is_synced,
+    });
+    await db.shifts.bulkAdd([
+      shift("s1", "r1", false),
+      shift("s2", "r1", false),
+      shift("s3", "r1", true),
+      shift("s4", "r2", false),
+    ]);
+    const store = useRestaurantStore();
+
+    expect(await store.unsyncedShiftCount("r1")).toBe(2);
+    expect(await store.unsyncedShiftCount("r3")).toBe(0);
+  });
 });

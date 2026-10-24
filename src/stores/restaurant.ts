@@ -36,5 +36,21 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     restaurants.value = restaurants.value.filter((r) => r.pk !== pk);
   }
 
-  return { restaurants, loadRestaurants, create, update, remove };
+  /** Shifts that a deletion would lose: they never reached the server. */
+  async function unsyncedShiftCount(pk: string) {
+    return db.shifts
+      .where("restaurant")
+      .equals(pk)
+      .filter((shift) => !shift.is_synced)
+      .count();
+  }
+
+  return {
+    restaurants,
+    loadRestaurants,
+    create,
+    update,
+    remove,
+    unsyncedShiftCount,
+  };
 });
