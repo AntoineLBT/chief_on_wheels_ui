@@ -8,6 +8,7 @@ import "@mdi/font/css/materialdesignicons.css";
 import App from "./App.vue";
 import { db } from "./services/db";
 import { useAuthStore } from "./stores/auth";
+import { resolveShiftRoute } from "./stores/shift";
 
 const vuetify = createVuetify({ theme: { defaultTheme: "light" } });
 
@@ -54,8 +55,14 @@ const router = createRouter({
     },
     { path: "/shift", component: () => import("@/pages/ShiftListPage.vue") },
     {
-      path: "/shift/:pk",
+      // Top-level: full screen, outside RestaurantPage and its sidebar.
+      path: "/restaurants/:restaurantId/shifts/:shiftId",
       component: () => import("@/pages/ShiftPage.vue"),
+      beforeEnter: (to) =>
+        resolveShiftRoute(
+          String(to.params.restaurantId),
+          String(to.params.shiftId),
+        ),
     },
   ],
 });
