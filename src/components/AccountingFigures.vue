@@ -16,30 +16,34 @@
 import type { Figures } from "@/stores/accounting";
 import { formatPrice } from "@/utils/format";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps<{ figures: Figures }>();
+const { t } = useI18n();
 
 const kpis = computed(() => [
   {
-    label: "Revenue excl. VAT",
+    label: t("accounting.revenueExclVat"),
     value: props.figures.revenue_excl_vat,
-    hint: `${formatPrice(props.figures.revenue_incl_vat)} incl. VAT`,
+    hint: t("accounting.inclVat", {
+      price: formatPrice(props.figures.revenue_incl_vat),
+    }),
     color: undefined,
   },
   {
-    label: "Material cost",
+    label: t("accounting.materialCost"),
     value: props.figures.material_cost,
-    hint: `${props.figures.order_count} order(s)`,
+    hint: t("count.orders", props.figures.order_count),
     color: undefined,
   },
   {
-    label: "Fixed charges",
+    label: t("accounting.fixedCharges"),
     value: props.figures.fixed_charges,
-    hint: `${props.figures.shift_count} shift(s)`,
+    hint: t("count.shifts", props.figures.shift_count),
     color: undefined,
   },
   {
-    label: "Profit",
+    label: t("accounting.profit"),
     value: props.figures.profit,
     hint: "",
     color: props.figures.profit < 0 ? "error" : "success",

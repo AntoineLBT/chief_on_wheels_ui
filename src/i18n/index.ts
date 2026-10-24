@@ -18,6 +18,8 @@ export const i18n = createI18n({
   legacy: false,
   locale: storedLocale(),
   fallbackLocale: "en",
+  // French uses the singular for 0 and 1 ("0 commande").
+  pluralRules: { fr: (choice: number) => (choice > 1 ? 1 : 0) },
   // Vuetify reads its own strings under $vuetify, through its vue-i18n adapter.
   messages: {
     fr: { ...fr, $vuetify: vuetifyFr },

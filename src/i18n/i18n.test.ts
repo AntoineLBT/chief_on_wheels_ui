@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import en from "@/i18n/en";
 import fr from "@/i18n/fr";
 import { i18n, setLocale, storedLocale } from "@/i18n";
@@ -39,5 +39,26 @@ describe("locale", () => {
     localStorage.setItem("locale", "de");
 
     expect(storedLocale()).toBe("fr");
+  });
+});
+
+describe("plurals", () => {
+  afterEach(() => setLocale("fr"));
+
+  it("counts orders in both languages", () => {
+    const { t } = i18n.global;
+
+    setLocale("fr");
+    expect([0, 1, 3].map((n) => t("count.orders", { n }, n))).toEqual([
+      "0 commande",
+      "1 commande",
+      "3 commandes",
+    ]);
+
+    setLocale("en");
+    expect([1, 3].map((n) => t("count.orders", { n }, n))).toEqual([
+      "1 order",
+      "3 orders",
+    ]);
   });
 });

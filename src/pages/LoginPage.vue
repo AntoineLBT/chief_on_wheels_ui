@@ -11,7 +11,7 @@
       <v-text-field
         v-model="username"
         density="compact"
-        placeholder="Username"
+        :placeholder="t('login.username')"
         prepend-inner-icon="mdi-account-outline"
         variant="outlined"
         validate-on="blur"
@@ -23,7 +23,7 @@
         :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
         :type="showPassword ? 'text' : 'password'"
         density="compact"
-        placeholder="Enter your password"
+        :placeholder="t('login.password')"
         prepend-inner-icon="mdi-lock-outline"
         variant="outlined"
         validate-on="blur"
@@ -40,7 +40,7 @@
         block
         @click="submitLogin"
       >
-        Log In
+        {{ t("login.submit") }}
       </v-btn>
     </v-card>
   </div>
@@ -49,6 +49,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import logo from "@/assets/logo.png";
 import { load } from "@/services/cache";
@@ -58,10 +59,11 @@ const showPassword = ref(false);
 const authStore = useAuthStore();
 const syncStore = useSyncStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const rules = {
-  required: (value: string) => !!value || "Required.",
-  min: (v: string) => v.length >= 8 || "Min 8 characters",
+  required: (value: string) => !!value || t("validation.required"),
+  min: (v: string) => v.length >= 8 || t("validation.minPassword"),
 };
 
 const username = ref("");
@@ -75,7 +77,7 @@ async function submitLogin() {
     await syncStore.refreshPendingCount();
     router.push("/");
   } catch {
-    error.value = "Invalid username or password";
+    error.value = t("login.invalid");
   }
 }
 </script>

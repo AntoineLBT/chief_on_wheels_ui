@@ -19,7 +19,9 @@
           color="white"
           class="me-2"
           @click="onShift"
-          >{{ openShift ? "Resume shift" : "Start shift" }}</v-btn
+          >{{
+            openShift ? t("layout.resumeShift") : t("layout.startShift")
+          }}</v-btn
         >
         <v-chip
           v-if="!isOnline"
@@ -27,7 +29,7 @@
           prepend-icon="mdi-wifi-off"
           class="me-2"
         >
-          Offline
+          {{ t("common.offline") }}
         </v-chip>
         <v-btn
           v-if="isOnline"
@@ -38,7 +40,7 @@
           class="me-2"
           @click="syncStore.syncAll"
         >
-          Sync
+          {{ t("layout.sync") }}
           <v-badge
             v-if="syncStore.pendingCount"
             :content="syncStore.pendingCount"
@@ -52,11 +54,11 @@
             <v-btn icon="mdi-cog" v-bind="menuProps"></v-btn>
           </template>
           <v-list>
-            <v-list-subheader>Font size</v-list-subheader>
+            <v-list-subheader>{{ t("layout.fontSize") }}</v-list-subheader>
             <v-list-item
               v-for="option in fontSizeOptions"
               :key="option.value"
-              :title="option.label"
+              :title="t(option.labelKey)"
               :prepend-icon="option.icon"
               :active="fontSize === option.value"
               active-color="primary"
@@ -64,7 +66,7 @@
             ></v-list-item>
             <v-divider></v-divider>
             <v-list-item
-              title="Logout"
+              :title="t('layout.logout')"
               prepend-icon="mdi-logout"
               @click="onLogout"
             ></v-list-item>
@@ -75,7 +77,7 @@
 
     <v-navigation-drawer v-model="isDrawerOpen">
       <v-list nav>
-        <v-list-subheader>Restaurants</v-list-subheader>
+        <v-list-subheader>{{ t("layout.restaurants") }}</v-list-subheader>
         <v-list-item
           v-for="restaurant in sortedRestaurants"
           :key="restaurant.pk"
@@ -95,7 +97,7 @@
             variant="tonal"
             :disabled="!isOnline"
             @click="isCreateDialogOpen = true"
-            >New restaurant</v-btn
+            >{{ t("layout.newRestaurant") }}</v-btn
           >
         </div>
       </template>
@@ -122,6 +124,7 @@ import { useRestaurantStore } from "@/stores/restaurant";
 import { ShiftAlreadyOpenError, useShiftStore } from "@/stores/shift";
 import { useSyncStore } from "@/stores/sync";
 import { computed, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 const authStore = useAuthStore();
@@ -130,6 +133,7 @@ const restaurantStore = useRestaurantStore();
 const router = useRouter();
 const route = useRoute();
 const { isOnline } = useOnlineStatus();
+const { t } = useI18n();
 
 // null lets Vuetify open the drawer on large screens and close it on mobile.
 const isDrawerOpen = ref<boolean | null>(null);
@@ -177,10 +181,18 @@ async function onShift() {
 
 type FontSize = "small" | "medium" | "large";
 
-const fontSizeOptions: { label: string; value: FontSize; icon: string }[] = [
-  { label: "Small", value: "small", icon: "mdi-format-font-size-decrease" },
-  { label: "Medium", value: "medium", icon: "mdi-format-size" },
-  { label: "Large", value: "large", icon: "mdi-format-font-size-increase" },
+const fontSizeOptions: { labelKey: string; value: FontSize; icon: string }[] = [
+  {
+    labelKey: "layout.fontSmall",
+    value: "small",
+    icon: "mdi-format-font-size-decrease",
+  },
+  { labelKey: "layout.fontMedium", value: "medium", icon: "mdi-format-size" },
+  {
+    labelKey: "layout.fontLarge",
+    value: "large",
+    icon: "mdi-format-font-size-increase",
+  },
 ];
 
 const fontSizeMap: Record<FontSize, string> = {

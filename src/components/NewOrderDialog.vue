@@ -1,12 +1,12 @@
 <template>
   <v-card
     prepend-icon="mdi-receipt-text-plus"
-    :title="isEditMode ? 'Edit Order' : 'New Order'"
+    :title="isEditMode ? t('orders.edit') : t('orders.new')"
     min-width="600"
   >
-    <v-card-subtitle class="mt-1"
-      >Select recipes to add to the order</v-card-subtitle
-    >
+    <v-card-subtitle class="mt-1">{{
+      t("orders.selectRecipes")
+    }}</v-card-subtitle>
 
     <v-card-text>
       <v-row>
@@ -25,7 +25,8 @@
       <v-divider></v-divider>
 
       <v-card-title>
-        <v-icon icon="mdi-cart-outline" class="me-2"></v-icon>Cart
+        <v-icon icon="mdi-cart-outline" class="me-2"></v-icon
+        >{{ t("orders.cart") }}
       </v-card-title>
 
       <v-card-text>
@@ -87,7 +88,8 @@
       <v-divider></v-divider>
 
       <v-card-title>
-        <v-icon icon="mdi-account-clock" class="me-2"></v-icon>Order info
+        <v-icon icon="mdi-account-clock" class="me-2"></v-icon
+        >{{ t("orders.info") }}
       </v-card-title>
 
       <v-card-text>
@@ -95,7 +97,7 @@
           <v-col cols="4">
             <v-text-field
               v-model="customerName"
-              label="Customer name"
+              :label="t('orders.customerName')"
               density="compact"
               :error="submitted && !customerName"
               error-messages=""
@@ -104,7 +106,7 @@
           <v-col cols="4">
             <v-text-field
               :model-value="pickingTime"
-              label="Picking time"
+              :label="t('orders.pickingTime')"
               readonly
               density="compact"
               :error="submitted && !pickingTime"
@@ -131,13 +133,15 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn variant="text" @click="emit('close')">Cancel</v-btn>
+      <v-btn variant="text" @click="emit('close')">{{
+        t("common.cancel")
+      }}</v-btn>
       <v-btn
         color="primary"
         variant="tonal"
         :disabled="!isValid"
         @click="onSubmitOrder"
-        >Create</v-btn
+        >{{ isEditMode ? t("common.save") : t("common.create") }}</v-btn
       >
     </v-card-actions>
   </v-card>
@@ -145,7 +149,7 @@
   <v-dialog v-model="isEditRecipeOpen" max-width="400">
     <v-card v-if="editingLine">
       <v-card-title>{{ editingLine.recipe.name }}</v-card-title>
-      <v-card-subtitle>Toggle ingredients to add or remove</v-card-subtitle>
+      <v-card-subtitle>{{ t("orders.toggleIngredients") }}</v-card-subtitle>
       <v-card-text>
         <v-checkbox
           v-for="ingredient in ingredientStore.ingredients"
@@ -177,8 +181,11 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" variant="tonal" @click="isEditRecipeOpen = false"
-          >Done</v-btn
+        <v-btn
+          color="primary"
+          variant="tonal"
+          @click="isEditRecipeOpen = false"
+          >{{ t("common.done") }}</v-btn
         >
       </v-card-actions>
     </v-card>
@@ -192,6 +199,7 @@ import { useOrderStore, type CartLine } from "@/stores/order";
 import { useRecipeStore } from "@/stores/recipe";
 import { useShiftStore } from "@/stores/shift";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { formatPrice } from "@/utils/format";
 import { orderTotal, snapshotLine } from "@/utils/order";
 import { useRecipeIngredientStore } from "../stores/recipeIngredient";
@@ -211,6 +219,7 @@ const ingredientStore = useIngredientStore();
 const shiftStore = useShiftStore();
 const recipeIngredientStore = useRecipeIngredientStore();
 const orderStore = useOrderStore();
+const { t } = useI18n();
 
 const cartLines = ref<CartLine[]>([]);
 const customerName = ref("");

@@ -6,8 +6,7 @@
       </template>
       <v-card-title>{{ order.customer_name }}</v-card-title>
       <v-card-subtitle>
-        Picking at
-        {{ formatTime(order.picking_time) }}
+        {{ t("orders.pickingAt", { time: formatTime(order.picking_time) }) }}
       </v-card-subtitle>
     </v-card-item>
 
@@ -37,7 +36,9 @@
           </div>
         </div>
       </div>
-      <div v-else class="text-medium-emphasis text-body-2">No recipes.</div>
+      <div v-else class="text-medium-emphasis text-body-2">
+        {{ t("orders.noRecipe") }}
+      </div>
     </v-card-text>
 
     <v-divider></v-divider>
@@ -46,9 +47,9 @@
       <template #append>
         <span class="text-h6 font-weight-bold">{{ formatPrice(total) }}</span>
       </template>
-      <v-card-title class="text-body-2 text-medium-emphasis"
-        >Total</v-card-title
-      >
+      <v-card-title class="text-body-2 text-medium-emphasis">{{
+        t("orders.total")
+      }}</v-card-title>
     </v-card-item>
 
     <v-card-actions>
@@ -65,24 +66,30 @@
         @click="confirmDelete = true"
       ></v-btn>
       <v-spacer></v-spacer>
-      <v-btn variant="text" @click="emit('close')">Close</v-btn>
+      <v-btn variant="text" @click="emit('close')">{{
+        t("common.close")
+      }}</v-btn>
     </v-card-actions>
   </v-card>
 
   <v-dialog v-model="confirmDelete" max-width="350">
     <v-card>
-      <v-card-title>Delete order?</v-card-title>
+      <v-card-title>{{ t("orders.deleteTitle") }}</v-card-title>
       <v-card-text>
-        This will permanently delete the order for
-        <strong>{{ order.customer_name }}</strong
-        >. This cannot be undone.
+        <i18n-t keypath="orders.deleteConfirm" tag="span" scope="global">
+          <template #name>
+            <strong>{{ order.customer_name }}</strong>
+          </template>
+        </i18n-t>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="confirmDelete = false">Cancel</v-btn>
-        <v-btn color="error" variant="tonal" @click="onConfirmDelete"
-          >Delete</v-btn
-        >
+        <v-btn variant="text" @click="confirmDelete = false">{{
+          t("common.cancel")
+        }}</v-btn>
+        <v-btn color="error" variant="tonal" @click="onConfirmDelete">{{
+          t("common.delete")
+        }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -90,6 +97,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
 import { formatPrice, formatTime } from "@/utils/format";
@@ -100,6 +108,7 @@ const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ close: []; edit: [] }>();
 
 const orderStore = useOrderStore();
+const { t } = useI18n();
 const lines = ref<OrderLine[]>([]);
 const confirmDelete = ref(false);
 

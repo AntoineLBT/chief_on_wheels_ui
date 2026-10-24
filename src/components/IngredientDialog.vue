@@ -1,13 +1,13 @@
 <template>
   <v-card
     :prepend-icon="ingredient ? 'mdi-pencil-outline' : 'mdi-plus'"
-    :title="ingredient ? 'Edit ingredient' : 'New ingredient'"
+    :title="ingredient ? t('ingredients.edit') : t('ingredients.new')"
   >
     <v-form v-model="isValid" @submit.prevent="onSubmit">
       <v-card-text>
         <v-text-field
           v-model="form.name"
-          label="Name"
+          :label="t('common.name')"
           :rules="[rules.required]"
           autofocus
         ></v-text-field>
@@ -15,18 +15,18 @@
           <v-col cols="5">
             <v-select
               v-model="form.unit"
-              label="Sold by"
+              :label="t('ingredients.soldBy')"
               :items="unitItems"
             ></v-select>
           </v-col>
           <v-col cols="7">
             <v-text-field
               v-model.number="form.price_per_unit"
-              label="Price"
+              :label="t('common.price')"
               type="number"
               min="0"
               step="0.01"
-              :suffix="`€ / ${ingredientUnitLabels[form.unit]}`"
+              :suffix="`€ / ${t(`units.${form.unit}`)}`"
               :rules="[rules.required, rules.positive]"
             ></v-text-field>
           </v-col>
@@ -34,14 +34,14 @@
 
         <v-checkbox
           v-model="form.has_extra"
-          label="Available as a paid extra"
+          :label="t('ingredients.paidExtra')"
           hide-details
         ></v-checkbox>
         <v-row>
           <v-col cols="6">
             <v-text-field
               v-model.number="form.extra_price"
-              label="Extra price"
+              :label="t('ingredients.extraPrice')"
               type="number"
               min="0"
               step="0.01"
@@ -53,11 +53,11 @@
           <v-col cols="6">
             <v-text-field
               v-model.number="form.extra_quantity"
-              label="Extra portion"
+              :label="t('ingredients.extraPortion')"
               type="number"
               min="1"
               step="1"
-              :suffix="ingredientBaseUnitLabels[form.unit]"
+              :suffix="t(`baseUnits.${form.unit}`)"
               :disabled="!form.has_extra"
               :rules="
                 form.has_extra ? [rules.required, rules.positiveInteger] : []
@@ -72,14 +72,16 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="emit('close')">Cancel</v-btn>
+        <v-btn variant="text" @click="emit('close')">{{
+          t("common.cancel")
+        }}</v-btn>
         <v-btn
           type="submit"
           color="primary"
           variant="tonal"
           :disabled="!isValid"
           :loading="isSubmitting"
-          >{{ ingredient ? "Save" : "Create" }}</v-btn
+          >{{ ingredient ? t("common.save") : t("common.create") }}</v-btn
         >
       </v-card-actions>
     </v-form>
@@ -89,12 +91,9 @@
 <script setup lang="ts">
 import type { Ingredient } from "@/services/db";
 import { type IngredientInput, useIngredientStore } from "@/stores/ingredient";
-import {
-  IngredientUnit,
-  ingredientBaseUnitLabels,
-  ingredientUnitLabels,
-} from "@/utils/constant";
-import { reactive, ref } from "vue";
+import { IngredientUnit } from "@/utils/constant";
+import { computed, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
 const props = defineProps<{
@@ -104,11 +103,14 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>();
 
 const ingredientStore = useIngredientStore();
+const { t } = useI18n();
 
-const unitItems = Object.values(IngredientUnit).map((unit) => ({
-  value: unit,
-  title: ingredientUnitLabels[unit],
-}));
+const unitItems = computed(() =>
+  Object.values(IngredientUnit).map((unit) => ({
+    value: unit,
+    title: t(`units.${unit}`),
+  })),
+);
 
 // v-model.number yields "" for an empty number field.
 type NumberField = number | "" | null;
@@ -118,11 +120,13 @@ const isEmpty = (value: NumberField | string) =>
   (typeof value === "string" && !value.trim());
 
 const rules = {
-  required: (value: NumberField | string) => !isEmpty(value) || "Required.",
-  positive: (value: NumberField) => Number(value) >= 0 || "Must be positive.",
+  required: (value: NumberField | string) =>
+    !isEmpty(value) || t("validation.required"),
+  positive: (value: NumberField) =>
+    Number(value) >= 0 || t("validation.positive"),
   positiveInteger: (value: NumberField) =>
     (Number.isInteger(value) && Number(value) > 0) ||
-    "Must be a whole number above 0.",
+    t("validation.wholeAboveZero"),
 };
 
 const form = reactive({
@@ -162,7 +166,7 @@ async function onSubmit() {
     }
     emit("close");
   } catch {
-    error.value = "Could not save the ingredient. Check your connection.";
+    error.value = t("ingredients.saveError");
   } finally {
     isSubmitting.value = false;
   }

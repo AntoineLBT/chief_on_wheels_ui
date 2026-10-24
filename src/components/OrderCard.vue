@@ -22,7 +22,7 @@
     <v-card-text class="pt-0">
       <div v-if="order.status === OrderStatus.todo" class="text-body-2">
         <v-icon icon="mdi-pizza" size="small" class="me-1"></v-icon>
-        {{ lines.length }} pizza{{ lines.length !== 1 ? "s" : "" }}
+        {{ t("count.pizzas", lines.length) }}
       </div>
 
       <div v-else-if="order.status === OrderStatus.inProgress">
@@ -64,7 +64,11 @@
         "
         @click.stop="onUpdateStore"
       >
-        {{ order.status === OrderStatus.todo ? "Start" : "Done" }}
+        {{
+          order.status === OrderStatus.todo
+            ? t("orders.start")
+            : t("common.done")
+        }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -72,6 +76,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
 import { formatPrice, formatTime } from "@/utils/format";
@@ -79,6 +84,7 @@ import { orderTotal } from "@/utils/order";
 import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
+const { t } = useI18n();
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ open: [] }>();
 

@@ -8,14 +8,14 @@
       <v-toolbar color="surface" border="b">
         <v-btn icon="mdi-close" @click="emit('close')"></v-btn>
         <v-toolbar-title>{{
-          recipe ? "Edit recipe" : "New recipe"
+          recipe ? t("recipes.edit") : t("recipes.new")
         }}</v-toolbar-title>
       </v-toolbar>
 
       <v-card-text class="flex-grow-1 overflow-y-auto">
         <v-text-field
           v-model="name"
-          label="Name"
+          :label="t('common.name')"
           :rules="[rules.required]"
           autofocus
         ></v-text-field>
@@ -24,12 +24,12 @@
           v-if="!ingredients.length"
           type="info"
           variant="tonal"
-          text="Add ingredients in the Ingredients tab first."
+          :text="t('recipes.noIngredient')"
         ></v-alert>
         <template v-else>
           <v-text-field
             v-model="filter"
-            label="Filter ingredients"
+            :label="t('recipes.filter')"
             prepend-inner-icon="mdi-magnify"
             density="compact"
             clearable
@@ -37,9 +37,11 @@
           <v-table density="compact">
             <thead>
               <tr>
-                <th>Ingredient</th>
-                <th style="width: 180px">Quantity</th>
-                <th class="text-right" style="width: 120px">Cost</th>
+                <th>{{ t("recipes.ingredient") }}</th>
+                <th style="width: 180px">{{ t("recipes.quantity") }}</th>
+                <th class="text-right" style="width: 120px">
+                  {{ t("common.cost") }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -60,7 +62,7 @@
                     density="compact"
                     variant="outlined"
                     hide-details="auto"
-                    :suffix="ingredientBaseUnitLabels[ingredient.unit]"
+                    :suffix="t(`baseUnits.${ingredient.unit}`)"
                     :rules="[rules.optionalPositiveInteger]"
                   ></v-text-field>
                 </td>
@@ -86,7 +88,7 @@
       <div class="d-flex flex-wrap align-center ga-6 pa-4">
         <v-text-field
           v-model.number="price"
-          label="Price"
+          :label="t('common.price')"
           type="number"
           min="0"
           step="0.01"
@@ -97,24 +99,24 @@
           :rules="[rules.required, rules.positive]"
         ></v-text-field>
         <div>
-          <div class="text-caption">Cost</div>
+          <div class="text-caption">{{ t("common.cost") }}</div>
           <div class="text-subtitle-1">{{ formatPrice(cost) }}</div>
         </div>
         <div>
-          <div class="text-caption">Margin</div>
+          <div class="text-caption">{{ t("common.margin") }}</div>
           <div class="text-subtitle-1">
             {{ formatPrice(recipeMargin(numericPrice, cost)) }}
           </div>
         </div>
         <div>
-          <div class="text-caption">Coefficient</div>
+          <div class="text-caption">{{ t("common.coefficient") }}</div>
           <div class="text-subtitle-1">
             {{ formatCoefficient(recipeCoefficient(numericPrice, cost)) }}
           </div>
         </div>
         <v-switch
           v-model="isActive"
-          label="Active"
+          :label="t('common.active')"
           color="primary"
           hide-details
         ></v-switch>
@@ -126,14 +128,16 @@
           density="compact"
           :text="error"
         ></v-alert>
-        <v-btn variant="text" @click="emit('close')">Cancel</v-btn>
+        <v-btn variant="text" @click="emit('close')">{{
+          t("common.cancel")
+        }}</v-btn>
         <v-btn
           type="submit"
           color="primary"
           variant="tonal"
           :disabled="!isValid"
           :loading="isSubmitting"
-          >{{ recipe ? "Save" : "Create" }}</v-btn
+          >{{ recipe ? t("common.save") : t("common.create") }}</v-btn
         >
       </div>
     </v-form>
@@ -145,7 +149,6 @@ import type { Ingredient, Recipe } from "@/services/db";
 import { useIngredientStore } from "@/stores/ingredient";
 import { useRecipeStore } from "@/stores/recipe";
 import { useRecipeIngredientStore } from "@/stores/recipeIngredient";
-import { ingredientBaseUnitLabels } from "@/utils/constant";
 import {
   ingredientCost,
   recipeCoefficient,
@@ -154,6 +157,7 @@ import {
 } from "@/utils/cost";
 import { formatCoefficient, formatPrice } from "@/utils/format";
 import { computed, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
 const props = defineProps<{
@@ -163,6 +167,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>();
 
 const recipeStore = useRecipeStore();
+const { t } = useI18n();
 const ingredientStore = useIngredientStore();
 const recipeIngredientStore = useRecipeIngredientStore();
 
@@ -175,12 +180,14 @@ const isEmpty = (value: NumberField | string | null | undefined) =>
   (typeof value === "string" && !value.trim());
 
 const rules = {
-  required: (value: NumberField | string) => !isEmpty(value) || "Required.",
-  positive: (value: NumberField) => Number(value) >= 0 || "Must be positive.",
+  required: (value: NumberField | string) =>
+    !isEmpty(value) || t("validation.required"),
+  positive: (value: NumberField) =>
+    Number(value) >= 0 || t("validation.positive"),
   optionalPositiveInteger: (value: NumberField) =>
     isEmpty(value) ||
     (Number.isInteger(value) && Number(value) > 0) ||
-    "Whole number above 0.",
+    t("validation.wholeAboveZero"),
 };
 
 const ingredients = computed(() =>
@@ -246,7 +253,7 @@ async function onSubmit() {
     }
     emit("close");
   } catch {
-    error.value = "Could not save the recipe. Check your connection.";
+    error.value = t("recipes.saveError");
   } finally {
     isSubmitting.value = false;
   }

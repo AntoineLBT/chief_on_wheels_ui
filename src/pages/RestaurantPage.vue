@@ -6,7 +6,7 @@
         :key="tab.name"
         :to="{ name: tab.name }"
         :prepend-icon="tab.icon"
-        >{{ tab.label }}</v-tab
+        >{{ t(tab.labelKey) }}</v-tab
       >
     </v-tabs>
     <v-divider></v-divider>
@@ -19,19 +19,30 @@
 
 <script setup lang="ts">
 import AppLayout from "@/components/AppLayout.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const tabs = [
   {
     name: "restaurant-ingredients",
-    label: "Ingredients",
+    labelKey: "restaurant.tabs.ingredients",
     icon: "mdi-food-apple-outline",
   },
-  { name: "restaurant-recipes", label: "Recipes", icon: "mdi-pizza" },
+  {
+    name: "restaurant-recipes",
+    labelKey: "restaurant.tabs.recipes",
+    icon: "mdi-pizza",
+  },
   {
     name: "restaurant-accounting",
-    label: "Accounting",
+    labelKey: "restaurant.tabs.accounting",
     icon: "mdi-chart-line",
   },
-  { name: "restaurant-settings", label: "Settings", icon: "mdi-cog-outline" },
+  {
+    name: "restaurant-settings",
+    labelKey: "restaurant.tabs.settings",
+    icon: "mdi-cog-outline",
+  },
 ];
 </script>

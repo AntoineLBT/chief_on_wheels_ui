@@ -5,10 +5,10 @@
     variant="tonal"
     density="compact"
     class="mb-4"
-    text="Offline: settings are read-only."
+    :text="t('settings.offline')"
   ></v-alert>
 
-  <div class="text-h6 mb-4">Restaurant</div>
+  <div class="text-h6 mb-4">{{ t("settings.restaurant") }}</div>
   <v-form
     v-model="isRestaurantValid"
     :disabled="!isOnline"
@@ -18,14 +18,14 @@
       <v-col cols="12" sm="8">
         <v-text-field
           v-model="restaurantForm.name"
-          label="Name"
+          :label="t('common.name')"
           :rules="[rules.required]"
         ></v-text-field>
       </v-col>
       <v-col cols="12" sm="4">
         <v-text-field
           v-model.number="restaurantForm.vat_rate"
-          label="VAT rate"
+          :label="t('settings.vatRate')"
           type="number"
           min="0"
           max="100"
@@ -50,7 +50,7 @@
         variant="tonal"
         :disabled="!isRestaurantValid || !isRestaurantChanged"
         :loading="isSavingRestaurant"
-        >Save</v-btn
+        >{{ t("common.save") }}</v-btn
       >
     </div>
   </v-form>
@@ -58,7 +58,7 @@
   <v-divider class="my-6"></v-divider>
 
   <div class="d-flex align-center mb-4">
-    <div class="text-h6">Fixed charges</div>
+    <div class="text-h6">{{ t("fixedCharges.title") }}</div>
     <v-spacer></v-spacer>
     <v-btn
       color="primary"
@@ -66,14 +66,14 @@
       prepend-icon="mdi-plus"
       :disabled="!isOnline"
       @click="openForm(null)"
-      >New fixed charge</v-btn
+      >{{ t("fixedCharges.new") }}</v-btn
     >
   </div>
 
   <v-empty-state
     v-if="!isOnline"
     icon="mdi-wifi-off"
-    title="Fixed charges are only available online"
+    :title="t('fixedCharges.onlineOnly')"
   ></v-empty-state>
 
   <v-alert
@@ -86,16 +86,16 @@
   <v-empty-state
     v-else-if="!sortedCharges.length"
     icon="mdi-cash-clock"
-    title="No fixed charge yet"
+    :title="t('fixedCharges.empty')"
   ></v-empty-state>
 
   <v-table v-else>
     <thead>
       <tr>
-        <th>Name</th>
-        <th class="text-right">Amount</th>
-        <th>Frequency</th>
-        <th>Since</th>
+        <th>{{ t("common.name") }}</th>
+        <th class="text-right">{{ t("common.amount") }}</th>
+        <th>{{ t("common.frequency") }}</th>
+        <th>{{ t("fixedCharges.since") }}</th>
         <th></th>
       </tr>
     </thead>
@@ -103,7 +103,7 @@
       <tr v-for="charge in sortedCharges" :key="charge.pk">
         <td>{{ charge.name }}</td>
         <td class="text-right">{{ formatPrice(charge.amount) }}</td>
-        <td>{{ fixedChargeFrequencyLabels[charge.frequency] }}</td>
+        <td>{{ t(`frequencies.${charge.frequency}`) }}</td>
         <td>{{ formatDate(charge.start_date) }}</td>
         <td class="text-right text-no-wrap">
           <v-btn
@@ -128,8 +128,8 @@
   <v-card variant="outlined" color="error">
     <v-card-item
       prepend-icon="mdi-alert-outline"
-      title="Danger zone"
-      subtitle="Deleting the restaurant cannot be undone."
+      :title="t('settings.dangerZone')"
+      :subtitle="t('settings.dangerHint')"
     >
       <template #append>
         <v-btn
@@ -138,7 +138,7 @@
           prepend-icon="mdi-delete-outline"
           :disabled="!isOnline || !restaurant"
           @click="openDeleteRestaurant"
-          >Delete restaurant</v-btn
+          >{{ t("settings.deleteRestaurant") }}</v-btn
         >
       </template>
     </v-card-item>
@@ -165,16 +165,16 @@
   <v-dialog v-model="isCloseOpen" max-width="400">
     <v-card
       prepend-icon="mdi-close-circle-outline"
-      :title="`Stop ${closedCharge?.name}?`"
+      :title="t('fixedCharges.stopTitle', { name: closedCharge?.name })"
     >
       <v-form v-model="isCloseValid" @submit.prevent="onClose">
         <v-card-text>
           <p class="mb-4">
-            The charge stays in the accounting up to and including this day.
+            {{ t("fixedCharges.stopHint") }}
           </p>
           <v-text-field
             v-model="closeDate"
-            label="Last day"
+            :label="t('fixedCharges.lastDay')"
             type="date"
             :min="closedCharge?.start_date"
             :rules="[rules.required, rules.notBeforeStart]"
@@ -188,14 +188,16 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn variant="text" @click="isCloseOpen = false">Cancel</v-btn>
+          <v-btn variant="text" @click="isCloseOpen = false">{{
+            t("common.cancel")
+          }}</v-btn>
           <v-btn
             type="submit"
             color="error"
             variant="tonal"
             :disabled="!isCloseValid"
             :loading="isClosing"
-            >Stop</v-btn
+            >{{ t("fixedCharges.stop") }}</v-btn
           >
         </v-card-actions>
       </v-form>
@@ -209,16 +211,17 @@ import FixedChargeDialog from "@/components/FixedChargeDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { type FixedCharge, useFixedChargeStore } from "@/stores/fixedCharge";
 import { useRestaurantStore } from "@/stores/restaurant";
-import { fixedChargeFrequencyLabels } from "@/utils/constant";
 import { localIsoDate } from "@/utils/date";
 import { formatDate, formatPrice } from "@/utils/format";
 import { isAxiosError } from "axios";
 import { computed, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const restaurantStore = useRestaurantStore();
 const fixedChargeStore = useFixedChargeStore();
+const { t } = useI18n();
 const { isOnline } = useOnlineStatus();
 
 const restaurantPk = computed(() => String(route.params.restaurantId));
@@ -231,13 +234,15 @@ type NumberField = number | "";
 
 const rules = {
   required: (value: NumberField | string) =>
-    (value !== "" && String(value).trim() !== "") || "Required.",
+    (value !== "" && String(value).trim() !== "") || t("validation.required"),
   percentage: (value: NumberField) =>
-    (Number(value) >= 0 && Number(value) <= 100) || "Between 0 and 100.",
+    (Number(value) >= 0 && Number(value) <= 100) || t("validation.percentage"),
   // ISO dates compare as strings.
   notBeforeStart: (value: string) =>
     value >= closedCharge.value!.start_date ||
-    "Must not be before the start of the charge.",
+    t("fixedCharges.notBeforeStart", {
+      date: formatDate(closedCharge.value!.start_date),
+    }),
 };
 
 // Restaurant
@@ -274,8 +279,7 @@ async function onSaveRestaurant() {
       vat_rate: Number(restaurantForm.vat_rate),
     });
   } catch {
-    restaurantError.value =
-      "Could not save the restaurant. Check your connection.";
+    restaurantError.value = t("settings.saveError");
   } finally {
     isSavingRestaurant.value = false;
   }
@@ -302,7 +306,7 @@ watch(
     try {
       await fixedChargeStore.load(pk);
     } catch {
-      chargesError.value = "Could not load the fixed charges.";
+      chargesError.value = t("fixedCharges.loadError");
     }
   },
   { immediate: true },
@@ -344,11 +348,17 @@ async function onClose() {
     await fixedChargeStore.close(closedCharge.value!.pk, closeDate.value);
     isCloseOpen.value = false;
   } catch (e) {
+    // The API answers in English: show our own message for each case.
     const data = isAxiosError(e) ? e.response?.data : undefined;
-    closeError.value =
-      data?.effective_date?.[0] ??
-      data?.detail ??
-      "Could not stop the charge. Check your connection.";
+    if (data?.effective_date) {
+      closeError.value = t("fixedCharges.notBeforeStart", {
+        date: formatDate(closedCharge.value!.start_date),
+      });
+    } else if (data?.detail) {
+      closeError.value = t("fixedCharges.alreadyClosed");
+    } else {
+      closeError.value = t("fixedCharges.stopError");
+    }
   } finally {
     isClosing.value = false;
   }

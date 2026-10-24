@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center flex-wrap ga-2 mb-4">
-    <div class="text-h6">Accounting</div>
+    <div class="text-h6">{{ t("accounting.title") }}</div>
     <v-spacer></v-spacer>
     <v-btn-toggle
       v-model="period"
@@ -9,9 +9,9 @@
       variant="outlined"
       color="primary"
     >
-      <v-btn value="year">Year</v-btn>
-      <v-btn value="month">Month</v-btn>
-      <v-btn value="week">Week</v-btn>
+      <v-btn value="year">{{ t("accounting.year") }}</v-btn>
+      <v-btn value="month">{{ t("accounting.month") }}</v-btn>
+      <v-btn value="week">{{ t("accounting.week") }}</v-btn>
     </v-btn-toggle>
     <div class="d-flex align-center">
       <v-btn
@@ -27,7 +27,9 @@
         variant="text"
         @click="date = stepPeriod(period, date, 1)"
       ></v-btn>
-      <v-btn variant="text" @click="date = localIsoDate()">Today</v-btn>
+      <v-btn variant="text" @click="date = localIsoDate()">{{
+        t("common.today")
+      }}</v-btn>
     </div>
   </div>
 
@@ -37,13 +39,13 @@
     variant="tonal"
     density="compact"
     class="mb-4"
-    :text="`${unsyncedShiftCount} unsynced shift(s) are not included. Sync to count them.`"
+    :text="t('accounting.unsynced', unsyncedShiftCount)"
   ></v-alert>
 
   <v-empty-state
     v-if="!isOnline"
     icon="mdi-wifi-off"
-    title="Accounting is only available online"
+    :title="t('accounting.onlineOnly')"
   ></v-empty-state>
 
   <v-alert v-else-if="error" type="error" variant="tonal" :text="error">
@@ -55,10 +57,10 @@
 
   <template v-else-if="report">
     <template v-if="report.period === 'year'">
-      <div class="text-subtitle-2 mb-2">To date</div>
+      <div class="text-subtitle-2 mb-2">{{ t("accounting.toDate") }}</div>
       <AccountingFigures :figures="report.to_date"></AccountingFigures>
       <div class="text-subtitle-2 mt-4 mb-2">
-        Whole year, upcoming fixed charges included
+        {{ t("accounting.wholeYear") }}
       </div>
     </template>
     <AccountingFigures :figures="report.totals"></AccountingFigures>
@@ -66,11 +68,17 @@
     <v-table class="mt-6" hover>
       <thead>
         <tr>
-          <th>{{ report.period === "year" ? "Month" : "Shift" }}</th>
-          <th class="text-right">Revenue excl. VAT</th>
-          <th class="text-right">Material cost</th>
-          <th class="text-right">Fixed charges</th>
-          <th class="text-right">Profit</th>
+          <th>
+            {{
+              report.period === "year"
+                ? t("accounting.month")
+                : t("accounting.shift")
+            }}
+          </th>
+          <th class="text-right">{{ t("accounting.revenueExclVat") }}</th>
+          <th class="text-right">{{ t("accounting.materialCost") }}</th>
+          <th class="text-right">{{ t("accounting.fixedCharges") }}</th>
+          <th class="text-right">{{ t("accounting.profit") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -89,7 +97,7 @@
                 size="x-small"
                 color="primary"
                 class="ml-2"
-                >current</v-chip
+                >{{ t("accounting.current") }}</v-chip
               >
             </td>
             <FiguresCells :figures="month"></FiguresCells>
@@ -103,13 +111,15 @@
             @click="row.shift && openShift(row.shift)"
           >
             <td>
-              {{ row.date ? formatDate(row.date) : "Charges without shift" }}
+              {{
+                row.date ? formatDate(row.date) : t("accounting.withoutShift")
+              }}
             </td>
             <FiguresCells :figures="row"></FiguresCells>
           </tr>
           <tr v-if="!report.breakdown.length">
             <td colspan="5" class="text-center text-medium-emphasis">
-              No shift in this period.
+              {{ t("accounting.noShift") }}
             </td>
           </tr>
         </template>
@@ -140,12 +150,14 @@ import { localIsoDate } from "@/utils/date";
 import { formatDate, formatMonth } from "@/utils/format";
 import { type Period, periodRange, stepPeriod } from "@/utils/period";
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const accountingStore = useAccountingStore();
 const restaurantStore = useRestaurantStore();
 const syncStore = useSyncStore();
+const { t } = useI18n();
 const { isOnline } = useOnlineStatus();
 
 const restaurantPk = computed(() => String(route.params.restaurantId));
@@ -180,7 +192,7 @@ watch(
     try {
       await accountingStore.load(pk, currentPeriod, currentDate);
     } catch {
-      error.value = "Could not load the accounting. Check your connection.";
+      error.value = t("accounting.loadError");
     } finally {
       isLoading.value = false;
     }

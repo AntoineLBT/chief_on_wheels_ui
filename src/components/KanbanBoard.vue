@@ -5,7 +5,7 @@
         prepend-icon="mdi-plus-circle-outline"
         color="primary"
         @click="isCreateDialogOpen = true"
-        >New order</v-btn
+        >{{ t("orders.new") }}</v-btn
       >
     </v-col>
   </v-row>
@@ -15,7 +15,9 @@
       <div class="d-flex align-center mb-3">
         <v-icon :icon="col.icon" :color="col.color" class="me-2"></v-icon>
         <span class="text-subtitle-1 font-weight-bold">{{ col.label }}</span>
-        <v-chip size="x-small" class="ms-2">{{ columnLists[col.status].length }}</v-chip>
+        <v-chip size="x-small" class="ms-2">{{
+          columnLists[col.status].length
+        }}</v-chip>
       </div>
       <v-divider class="mb-3"></v-divider>
       <draggable
@@ -45,7 +47,7 @@
             v-if="!columnLists[col.status].length"
             class="text-center text-medium-emphasis py-6"
           >
-            No orders
+            {{ t("orders.none") }}
           </div>
         </template>
       </draggable>
@@ -85,6 +87,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import draggable from "vuedraggable";
 import { useOrderStore } from "@/stores/order";
 import { OrderStatus } from "@/utils/constant";
@@ -94,6 +97,7 @@ import OrderDetailDialog from "@/components/OrderDetailDialog.vue";
 import type { Order } from "@/services/db";
 
 const orderStore = useOrderStore();
+const { t } = useI18n();
 const props = defineProps<{ shiftPk: string }>();
 
 // Computed with no-op setters: vuedraggable needs v-model (it considers :model-value
@@ -122,19 +126,19 @@ const columnLists = reactive({
 const columns = computed(() => [
   {
     status: OrderStatus.todo,
-    label: "To do",
+    label: t("statuses.TODO"),
     icon: "mdi-clock-outline",
     color: "warning",
   },
   {
     status: OrderStatus.inProgress,
-    label: "In progress",
+    label: t("statuses.IN_PROGRESS"),
     icon: "mdi-fire",
     color: "error",
   },
   {
     status: OrderStatus.done,
-    label: "Done",
+    label: t("statuses.DONE"),
     icon: "mdi-check-circle-outline",
     color: "success",
   },
@@ -147,10 +151,7 @@ const selectedOrder = ref<Order>();
 
 type DraggableChangeEvent = { added?: { element: Order } };
 
-function onColumnChange(
-  event: DraggableChangeEvent,
-  newStatus: OrderStatus,
-) {
+function onColumnChange(event: DraggableChangeEvent, newStatus: OrderStatus) {
   if (event.added) {
     orderStore.updateStatus(event.added.element.pk, newStatus);
   }

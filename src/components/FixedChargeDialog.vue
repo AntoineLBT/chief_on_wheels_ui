@@ -1,13 +1,13 @@
 <template>
   <v-card
     :prepend-icon="charge ? 'mdi-pencil-outline' : 'mdi-plus'"
-    :title="charge ? 'Edit fixed charge' : 'New fixed charge'"
+    :title="charge ? t('fixedCharges.edit') : t('fixedCharges.new')"
   >
     <v-form v-model="isValid" @submit.prevent="onSubmit">
       <v-card-text>
         <v-text-field
           v-model="form.name"
-          label="Name"
+          :label="t('common.name')"
           :rules="[rules.required]"
           autofocus
         ></v-text-field>
@@ -15,7 +15,7 @@
           <v-col cols="6">
             <v-text-field
               v-model.number="form.amount"
-              label="Amount"
+              :label="t('common.amount')"
               type="number"
               min="0.01"
               step="0.01"
@@ -26,7 +26,7 @@
           <v-col cols="6">
             <v-select
               v-model="form.frequency"
-              label="Frequency"
+              :label="t('common.frequency')"
               :items="frequencyItems"
             ></v-select>
           </v-col>
@@ -35,14 +35,14 @@
         <v-text-field
           v-if="!charge"
           v-model="form.date"
-          label="Applies from"
+          :label="t('fixedCharges.appliesFrom')"
           type="date"
           :rules="[rules.required]"
         ></v-text-field>
         <template v-else-if="isRevised">
           <v-text-field
             v-model="form.date"
-            label="New amount applies from"
+            :label="t('fixedCharges.newAmountFrom')"
             type="date"
             :min="dayAfter(charge.start_date)"
             :rules="[rules.required, rules.afterStart]"
@@ -51,7 +51,7 @@
             type="info"
             variant="tonal"
             density="compact"
-            text="The current amount stays in the accounting until the day before."
+            :text="t('fixedCharges.revisionHint')"
           ></v-alert>
         </template>
 
@@ -66,14 +66,16 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="emit('close')">Cancel</v-btn>
+        <v-btn variant="text" @click="emit('close')">{{
+          t("common.cancel")
+        }}</v-btn>
         <v-btn
           type="submit"
           color="primary"
           variant="tonal"
           :disabled="!isValid"
           :loading="isSubmitting"
-          >{{ charge ? "Save" : "Create" }}</v-btn
+          >{{ charge ? t("common.save") : t("common.create") }}</v-btn
         >
       </v-card-actions>
     </v-form>
@@ -82,13 +84,12 @@
 
 <script setup lang="ts">
 import { type FixedCharge, useFixedChargeStore } from "@/stores/fixedCharge";
-import {
-  FixedChargeFrequency,
-  fixedChargeFrequencyLabels,
-} from "@/utils/constant";
+import { FixedChargeFrequency } from "@/utils/constant";
 import { localIsoDate } from "@/utils/date";
+import { formatDate } from "@/utils/format";
 import { isAxiosError } from "axios";
 import { computed, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
 const props = defineProps<{
@@ -98,11 +99,14 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>();
 
 const fixedChargeStore = useFixedChargeStore();
+const { t } = useI18n();
 
-const frequencyItems = Object.values(FixedChargeFrequency).map((value) => ({
-  value,
-  title: fixedChargeFrequencyLabels[value],
-}));
+const frequencyItems = computed(() =>
+  Object.values(FixedChargeFrequency).map((value) => ({
+    value,
+    title: t(`frequencies.${value}`),
+  })),
+);
 
 function dayAfter(isoDate: string) {
   const date = new Date(`${isoDate}T00:00:00`);
@@ -115,12 +119,15 @@ type NumberField = number | "";
 
 const rules = {
   required: (value: NumberField | string) =>
-    (value !== "" && String(value).trim() !== "") || "Required.",
-  aboveZero: (value: NumberField) => Number(value) > 0 || "Must be above 0.",
+    (value !== "" && String(value).trim() !== "") || t("validation.required"),
+  aboveZero: (value: NumberField) =>
+    Number(value) > 0 || t("validation.aboveZero"),
   // ISO dates compare as strings.
   afterStart: (value: string) =>
     value > props.charge!.start_date ||
-    "Must be after the start of the charge.",
+    t("fixedCharges.afterStart", {
+      date: formatDate(props.charge!.start_date),
+    }),
 };
 
 const form = reactive({
@@ -175,11 +182,17 @@ async function onSubmit() {
     await save();
     emit("close");
   } catch (e) {
+    // The API answers in English: show our own message for each case.
     const data = isAxiosError(e) ? e.response?.data : undefined;
-    error.value =
-      data?.effective_date?.[0] ??
-      data?.detail ??
-      "Could not save the fixed charge. Check your connection.";
+    if (data?.effective_date) {
+      error.value = t("fixedCharges.afterStart", {
+        date: formatDate(props.charge!.start_date),
+      });
+    } else if (data?.detail) {
+      error.value = t("fixedCharges.alreadyClosed");
+    } else {
+      error.value = t("fixedCharges.saveError");
+    }
   } finally {
     isSubmitting.value = false;
   }

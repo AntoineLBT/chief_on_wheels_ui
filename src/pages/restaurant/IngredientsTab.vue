@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center mb-4">
-    <div class="text-h6">Ingredients</div>
+    <div class="text-h6">{{ t("ingredients.title") }}</div>
     <v-spacer></v-spacer>
     <v-btn
       color="primary"
@@ -8,7 +8,7 @@
       prepend-icon="mdi-plus"
       :disabled="!isOnline"
       @click="openForm(null)"
-      >New ingredient</v-btn
+      >{{ t("ingredients.new") }}</v-btn
     >
   </div>
 
@@ -18,32 +18,36 @@
     variant="tonal"
     density="compact"
     class="mb-4"
-    text="Offline: ingredients are read-only."
+    :text="t('ingredients.offline')"
   ></v-alert>
 
   <v-empty-state
     v-if="!sortedIngredients.length"
     icon="mdi-food-apple-outline"
-    title="No ingredient yet"
+    :title="t('ingredients.empty')"
   ></v-empty-state>
 
   <v-table v-else>
     <thead>
       <tr>
-        <th>Name</th>
-        <th>Sold by</th>
-        <th class="text-right">Price</th>
-        <th>Extra</th>
+        <th>{{ t("common.name") }}</th>
+        <th>{{ t("ingredients.soldBy") }}</th>
+        <th class="text-right">{{ t("common.price") }}</th>
+        <th>{{ t("ingredients.extra") }}</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="ingredient in sortedIngredients" :key="ingredient.pk">
         <td>{{ ingredient.name }}</td>
-        <td>{{ ingredientUnitLabels[ingredient.unit] }}</td>
+        <td>{{ t(`units.${ingredient.unit}`) }}</td>
         <td class="text-right">
-          {{ formatPrice(ingredient.price_per_unit) }} /
-          {{ ingredientUnitLabels[ingredient.unit] }}
+          {{
+            t("ingredients.pricePer", {
+              price: formatPrice(ingredient.price_per_unit),
+              unit: t(`units.${ingredient.unit}`),
+            })
+          }}
         </td>
         <td>
           <v-chip
@@ -54,7 +58,7 @@
           >
             +{{ formatPrice(ingredient.extra_price!) }} ·
             {{ ingredient.extra_quantity }}
-            {{ ingredientBaseUnitLabels[ingredient.unit] }}
+            {{ t(`baseUnits.${ingredient.unit}`) }}
           </v-chip>
         </td>
         <td class="text-right text-no-wrap">
@@ -89,7 +93,7 @@
   <v-dialog v-model="isDeleteOpen" max-width="400">
     <v-card
       prepend-icon="mdi-delete-outline"
-      :title="`Delete ${deletedIngredient?.name}?`"
+      :title="t('ingredients.deleteTitle', { name: deletedIngredient?.name })"
     >
       <v-card-text>
         <v-alert
@@ -107,14 +111,16 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="isDeleteOpen = false">Cancel</v-btn>
+        <v-btn variant="text" @click="isDeleteOpen = false">{{
+          t("common.cancel")
+        }}</v-btn>
         <v-btn
           color="error"
           variant="tonal"
           :disabled="!!deleteError"
           :loading="isDeleting"
           @click="onDelete"
-          >Delete</v-btn
+          >{{ t("common.delete") }}</v-btn
         >
       </v-card-actions>
     </v-card>
@@ -130,16 +136,14 @@ import {
   type RecipeRef,
   useIngredientStore,
 } from "@/stores/ingredient";
-import {
-  ingredientBaseUnitLabels,
-  ingredientUnitLabels,
-} from "@/utils/constant";
 import { formatPrice } from "@/utils/format";
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const ingredientStore = useIngredientStore();
+const { t } = useI18n();
 const { isOnline } = useOnlineStatus();
 
 const restaurantPk = computed(() => String(route.params.restaurantId));
@@ -184,11 +188,10 @@ async function onDelete() {
     if (error instanceof IngredientInUseError) {
       usingRecipes.value = error.recipes;
       deleteError.value = error.recipes.length
-        ? "Used in these recipes, remove it from them first:"
-        : "Used in past orders: it cannot be deleted.";
+        ? t("ingredients.usedInRecipes")
+        : t("ingredients.usedInOrders");
     } else {
-      deleteError.value =
-        "Could not delete the ingredient. Check your connection.";
+      deleteError.value = t("ingredients.deleteError");
     }
   } finally {
     isDeleting.value = false;

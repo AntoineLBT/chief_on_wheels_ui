@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center mb-4">
-    <div class="text-h6">Recipes</div>
+    <div class="text-h6">{{ t("recipes.title") }}</div>
     <v-spacer></v-spacer>
     <v-btn
       color="primary"
@@ -8,7 +8,7 @@
       prepend-icon="mdi-plus"
       :disabled="!isOnline"
       @click="openForm(null)"
-      >New recipe</v-btn
+      >{{ t("recipes.new") }}</v-btn
     >
   </div>
 
@@ -18,23 +18,23 @@
     variant="tonal"
     density="compact"
     class="mb-4"
-    text="Offline: recipes are read-only."
+    :text="t('recipes.offline')"
   ></v-alert>
 
   <v-empty-state
     v-if="!rows.length"
     icon="mdi-pizza"
-    title="No recipe yet"
+    :title="t('recipes.empty')"
   ></v-empty-state>
 
   <v-table v-else>
     <thead>
       <tr>
-        <th>Name</th>
-        <th class="text-right">Price</th>
-        <th class="text-right">Cost</th>
-        <th class="text-right">Margin</th>
-        <th class="text-right">Coefficient</th>
+        <th>{{ t("common.name") }}</th>
+        <th class="text-right">{{ t("common.price") }}</th>
+        <th class="text-right">{{ t("common.cost") }}</th>
+        <th class="text-right">{{ t("common.margin") }}</th>
+        <th class="text-right">{{ t("common.coefficient") }}</th>
         <th></th>
       </tr>
     </thead>
@@ -54,7 +54,9 @@
             size="small"
             variant="tonal"
             :color="row.recipe.is_active ? 'success' : undefined"
-            >{{ row.recipe.is_active ? "Active" : "Inactive" }}</v-chip
+            >{{
+              row.recipe.is_active ? t("common.active") : t("common.inactive")
+            }}</v-chip
           >
           <v-btn
             icon="mdi-pencil-outline"
@@ -89,10 +91,12 @@ import { recipeCoefficient, recipeCost, recipeMargin } from "@/utils/cost";
 import { formatCoefficient, formatPrice } from "@/utils/format";
 import type { Recipe } from "@/services/db";
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const recipeStore = useRecipeStore();
+const { t } = useI18n();
 const ingredientStore = useIngredientStore();
 const recipeIngredientStore = useRecipeIngredientStore();
 const { isOnline } = useOnlineStatus();

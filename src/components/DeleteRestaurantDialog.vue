@@ -1,24 +1,21 @@
 <template>
   <v-card
     prepend-icon="mdi-delete-outline"
-    :title="`Delete ${restaurant.name}?`"
+    :title="t('deleteRestaurant.title', { name: restaurant.name })"
   >
     <v-form @submit.prevent="onDelete">
       <v-card-text>
-        <p class="mb-4">
-          Its shifts, orders, recipes, ingredients and fixed charges are deleted
-          for good, on the server and on this device.
-        </p>
+        <p class="mb-4">{{ t("deleteRestaurant.hint") }}</p>
         <v-alert
           v-if="unsyncedShiftCount"
           type="error"
           variant="tonal"
           class="mb-4"
-          :text="`${unsyncedShiftCount} shift(s) of this restaurant are not synced: they will be lost.`"
+          :text="t('deleteRestaurant.unsynced', unsyncedShiftCount)"
         ></v-alert>
         <v-text-field
           v-model="confirmation"
-          :label="`Type “${restaurant.name}” to confirm`"
+          :label="t('deleteRestaurant.confirm', { name: restaurant.name })"
           autofocus
         ></v-text-field>
         <v-alert
@@ -30,14 +27,16 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn variant="text" @click="emit('close')">Cancel</v-btn>
+        <v-btn variant="text" @click="emit('close')">{{
+          t("common.cancel")
+        }}</v-btn>
         <v-btn
           type="submit"
           color="error"
           variant="tonal"
           :disabled="!isConfirmed"
           :loading="isDeleting"
-          >Delete</v-btn
+          >{{ t("common.delete") }}</v-btn
         >
       </v-card-actions>
     </v-form>
@@ -48,6 +47,7 @@
 import type { Restaurant } from "@/services/db";
 import { useRestaurantStore } from "@/stores/restaurant";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
@@ -56,6 +56,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const restaurantStore = useRestaurantStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const unsyncedShiftCount = ref(0);
 const confirmation = ref("");
@@ -82,7 +83,7 @@ async function onDelete() {
     // "/" falls back on the empty screen: the last opened restaurant is gone.
     router.push("/");
   } catch {
-    error.value = "Could not delete the restaurant. Check your connection.";
+    error.value = t("deleteRestaurant.error");
   } finally {
     isDeleting.value = false;
   }

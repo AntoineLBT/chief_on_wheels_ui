@@ -12,10 +12,10 @@
         <v-table class="mt-4" density="compact">
           <thead>
             <tr>
-              <th>Pick-up</th>
-              <th>Customer</th>
-              <th class="text-right">Amount</th>
-              <th class="text-right">Cost</th>
+              <th>{{ t("accounting.pickUp") }}</th>
+              <th>{{ t("accounting.customer") }}</th>
+              <th class="text-right">{{ t("common.amount") }}</th>
+              <th class="text-right">{{ t("common.cost") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -32,7 +32,7 @@
                   size="x-small"
                   color="warning"
                   class="ms-2"
-                  >not done · not counted</v-chip
+                  >{{ t("accounting.notCounted") }}</v-chip
                 >
               </td>
               <td class="text-right">{{ formatPrice(order.amount) }}</td>
@@ -44,7 +44,9 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn variant="text" @click="emit('close')">Close</v-btn>
+      <v-btn variant="text" @click="emit('close')">{{
+        t("common.close")
+      }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -55,19 +57,23 @@ import { type ShiftReport, useAccountingStore } from "@/stores/accounting";
 import { OrderStatus } from "@/utils/constant";
 import { formatDate, formatPrice, formatTime } from "@/utils/format";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
 const props = defineProps<{ restaurantPk: string; shiftPk: string }>();
 const emit = defineEmits<{ close: [] }>();
 
 const accountingStore = useAccountingStore();
+const { t } = useI18n();
 
 const report = ref<ShiftReport | null>(null);
 const isLoading = ref(true);
 const error = ref("");
 
 const title = computed(() =>
-  report.value ? `Shift of ${formatDate(report.value.start)}` : "Shift",
+  report.value
+    ? t("accounting.shiftOf", { date: formatDate(report.value.start) })
+    : t("accounting.shift"),
 );
 
 onMounted(async () => {
@@ -77,7 +83,7 @@ onMounted(async () => {
       props.shiftPk,
     );
   } catch {
-    error.value = "Could not load the shift. Check your connection.";
+    error.value = t("accounting.shiftLoadError");
   } finally {
     isLoading.value = false;
   }
