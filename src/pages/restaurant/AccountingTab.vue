@@ -31,6 +31,15 @@
     </div>
   </div>
 
+  <v-alert
+    v-if="unsyncedShiftCount"
+    type="warning"
+    variant="tonal"
+    density="compact"
+    class="mb-4"
+    :text="`${unsyncedShiftCount} unsynced shift(s) are not included. Sync to count them.`"
+  ></v-alert>
+
   <v-empty-state
     v-if="!isOnline"
     icon="mdi-wifi-off"
@@ -125,6 +134,8 @@ import FiguresCells from "@/components/FiguresCells.vue";
 import ShiftAccountingDialog from "@/components/ShiftAccountingDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useAccountingStore } from "@/stores/accounting";
+import { useRestaurantStore } from "@/stores/restaurant";
+import { useSyncStore } from "@/stores/sync";
 import { formatDate, localIsoDate } from "@/utils/date";
 import { type Period, periodRange, stepPeriod } from "@/utils/period";
 import { computed, ref, watch } from "vue";
@@ -132,6 +143,8 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const accountingStore = useAccountingStore();
+const restaurantStore = useRestaurantStore();
+const syncStore = useSyncStore();
 const { isOnline } = useOnlineStatus();
 
 const restaurantPk = computed(() => String(route.params.restaurantId));
@@ -142,8 +155,22 @@ const report = computed(() => accountingStore.report);
 const isLoading = ref(false);
 const error = ref("");
 
+// The accounting only sees synced shifts: say how many are missing.
+const unsyncedShiftCount = ref(0);
+
+// pendingCount drops after a sync: refresh the banner and the figures.
+const pendingCount = computed(() => syncStore.pendingCount);
+
 watch(
-  [restaurantPk, period, date, isOnline],
+  [restaurantPk, pendingCount],
+  async ([pk]) => {
+    unsyncedShiftCount.value = await restaurantStore.unsyncedShiftCount(pk);
+  },
+  { immediate: true },
+);
+
+watch(
+  [restaurantPk, period, date, isOnline, pendingCount],
   async ([pk, currentPeriod, currentDate, online]) => {
     accountingStore.report = null;
     error.value = "";
