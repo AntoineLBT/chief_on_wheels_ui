@@ -42,6 +42,9 @@
             :class="mod.action === 'ADD' ? 'text-success' : 'text-error'"
           >
             {{ mod.action === "ADD" ? "+" : "-" }} {{ mod.ingredient.name }}
+            <span v-if="mod.extra_price">
+              ({{ formatPrice(mod.extra_price) }})</span
+            >
           </div>
         </div>
       </div>
@@ -51,7 +54,7 @@
         class="text-body-2 font-weight-bold"
       >
         <v-icon icon="mdi-cash" size="small" class="me-1"></v-icon>
-        {{ total }}€
+        {{ formatPrice(total) }}
       </div>
     </v-card-text>
 
@@ -76,6 +79,8 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
+import { formatPrice } from "@/utils/format";
+import { orderTotal } from "@/utils/order";
 import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
@@ -85,9 +90,8 @@ const _navigator = navigator;
 
 const lines = ref<OrderLine[]>([]);
 
-const total = computed(() =>
-  lines.value.reduce((sum, l) => sum + l.recipe.price, 0),
-);
+// From the snapshots frozen at order creation.
+const total = computed(() => orderTotal(lines.value));
 
 const statusColor = computed(
   () =>

@@ -25,7 +25,9 @@
             <span class="text-body-1 font-weight-medium">{{
               line.recipe.name
             }}</span>
-            <span class="text-body-2">{{ line.recipe.price }}€</span>
+            <span class="text-body-2">{{
+              formatPrice(orderTotal([line]))
+            }}</span>
           </div>
           <div
             v-for="mod in line.modifications"
@@ -34,6 +36,9 @@
             :class="mod.action === 'ADD' ? 'text-success' : 'text-error'"
           >
             {{ mod.action === "ADD" ? "+" : "-" }} {{ mod.ingredient.name }}
+            <span v-if="mod.extra_price">
+              ({{ formatPrice(mod.extra_price) }})</span
+            >
           </div>
         </div>
       </div>
@@ -44,7 +49,7 @@
 
     <v-card-item>
       <template #append>
-        <span class="text-h6 font-weight-bold">{{ total }}€</span>
+        <span class="text-h6 font-weight-bold">{{ formatPrice(total) }}</span>
       </template>
       <v-card-title class="text-body-2 text-medium-emphasis"
         >Total</v-card-title
@@ -92,6 +97,8 @@
 import { computed, onMounted, ref } from "vue";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
+import { formatPrice } from "@/utils/format";
+import { orderTotal } from "@/utils/order";
 import { OrderStatus } from "@/utils/constant";
 
 const props = defineProps<{ order: Order }>();
@@ -101,9 +108,8 @@ const orderStore = useOrderStore();
 const lines = ref<OrderLine[]>([]);
 const confirmDelete = ref(false);
 
-const total = computed(() =>
-  lines.value.reduce((sum, l) => sum + l.recipe.price, 0),
-);
+// From the snapshots frozen at order creation.
+const total = computed(() => orderTotal(lines.value));
 
 const statusColor = computed(
   () =>
