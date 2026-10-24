@@ -17,11 +17,24 @@ export const useRestaurantStore = defineStore("restaurant", () => {
     return data;
   }
 
+  async function update(
+    pk: string,
+    changes: Partial<Pick<Restaurant, "name" | "vat_rate">>,
+  ) {
+    const { data } = await api.patch<Restaurant>(
+      `/restaurants/${pk}/`,
+      changes,
+    );
+    await db.restaurants.put(data);
+    restaurants.value = restaurants.value.map((r) => (r.pk === pk ? data : r));
+    return data;
+  }
+
   async function remove(pk: string) {
     await api.delete(`/restaurants/${pk}/`);
     await purgeRestaurant(pk);
     restaurants.value = restaurants.value.filter((r) => r.pk !== pk);
   }
 
-  return { restaurants, loadRestaurants, create, remove };
+  return { restaurants, loadRestaurants, create, update, remove };
 });

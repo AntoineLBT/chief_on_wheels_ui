@@ -22,3 +22,16 @@ export const ingredientBaseUnitLabels: Record<IngredientUnit, string> = {
   [IngredientUnit.l]: "ml",
   [IngredientUnit.unit]: "pc",
 };
+
+export enum FixedChargeFrequency {
+  perShift = "PER_SHIFT",
+  monthly = "MONTHLY",
+  yearly = "YEARLY",
+}
+
+export const fixedChargeFrequencyLabels: Record<FixedChargeFrequency, string> =
+  {
+    [FixedChargeFrequency.perShift]: "per shift",
+    [FixedChargeFrequency.monthly]: "monthly",
+    [FixedChargeFrequency.yearly]: "yearly",
+  };

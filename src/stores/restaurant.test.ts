@@ -7,7 +7,7 @@ import { IngredientUnit, OrderStatus } from "@/utils/constant";
 import { clearDb } from "@/test/db";
 
 vi.mock("@/services/apiClient", () => ({
-  default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() },
+  default: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
 }));
 
 function restaurant(pk: string, name: string) {
@@ -123,6 +123,30 @@ describe("useRestaurantStore", () => {
     const reloaded = useRestaurantStore();
     await reloaded.loadRestaurants();
     expect(reloaded.restaurants.map((r) => r.pk)).toEqual(["r3"]);
+  });
+
+  it("updates a restaurant on the server and locally", async () => {
+    await db.restaurants.bulkAdd([
+      restaurant("r1", "Chez Toto"),
+      restaurant("r2", "Autre"),
+    ]);
+    const updated = { ...restaurant("r1", "Chez Titi"), vat_rate: 10 };
+    vi.mocked(api.patch).mockResolvedValue({ data: updated });
+    const store = useRestaurantStore();
+    await store.loadRestaurants();
+
+    await store.update("r1", { name: "Chez Titi", vat_rate: 10 });
+
+    expect(api.patch).toHaveBeenCalledWith("/restaurants/r1/", {
+      name: "Chez Titi",
+      vat_rate: 10,
+    });
+    expect(store.restaurants).toEqual([updated, restaurant("r2", "Autre")]);
+
+    setActivePinia(createPinia());
+    const reloaded = useRestaurantStore();
+    await reloaded.loadRestaurants();
+    expect(reloaded.restaurants).toEqual([updated, restaurant("r2", "Autre")]);
   });
 
   it("removes a restaurant and purges all of its local data", async () => {
