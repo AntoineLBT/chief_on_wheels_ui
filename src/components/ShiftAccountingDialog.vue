@@ -19,9 +19,22 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="order in report.breakdown" :key="order.order">
+            <tr
+              v-for="order in report.breakdown"
+              :key="order.order"
+              :class="{ 'text-disabled': order.status !== OrderStatus.done }"
+            >
               <td>{{ formatTime(order.picking_time) }}</td>
-              <td>{{ order.customer_name }}</td>
+              <td>
+                {{ order.customer_name }}
+                <v-chip
+                  v-if="order.status !== OrderStatus.done"
+                  size="x-small"
+                  color="warning"
+                  class="ms-2"
+                  >not done · not counted</v-chip
+                >
+              </td>
               <td class="text-right">{{ formatPrice(order.amount) }}</td>
               <td class="text-right">{{ formatPrice(order.cost) }}</td>
             </tr>
@@ -39,6 +52,7 @@
 <script setup lang="ts">
 import AccountingFigures from "@/components/AccountingFigures.vue";
 import { type ShiftReport, useAccountingStore } from "@/stores/accounting";
+import { OrderStatus } from "@/utils/constant";
 import { formatDate } from "@/utils/date";
 import { formatPrice } from "@/utils/format";
 import { computed, onMounted, ref } from "vue";

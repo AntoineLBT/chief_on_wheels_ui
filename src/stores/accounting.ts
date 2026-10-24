@@ -1,4 +1,5 @@
 import api from "@/services/apiClient";
+import type { OrderStatus } from "@/utils/constant";
 import type { Period } from "@/utils/period";
 import { defineStore } from "pinia";
 import { ref } from "vue";
@@ -30,6 +31,8 @@ export interface OrderRow {
   order: string;
   customer_name: string;
   picking_time: string;
+  /** Only DONE orders count; the others are listed for the record. */
+  status: OrderStatus;
   amount: number;
   cost: number;
 }
