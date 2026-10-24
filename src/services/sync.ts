@@ -25,6 +25,8 @@ export async function sync() {
             ).map(async (orderRecipe) => ({
               id: orderRecipe.pk,
               recipe: orderRecipe.recipe,
+              unit_price: orderRecipe.unit_price,
+              unit_cost: orderRecipe.unit_cost,
               order_ingredients: (
                 await db.orderIngredients
                   .where("order_recipe")
@@ -34,6 +36,8 @@ export async function sync() {
                 id: orderIngredient.pk,
                 ingredient: orderIngredient.ingredient,
                 action_type: orderIngredient.action_type,
+                extra_price: orderIngredient.extra_price,
+                extra_cost: orderIngredient.extra_cost,
               })),
             })),
           ),

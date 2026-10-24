@@ -58,6 +58,8 @@ async function seedRestaurant(pk: string) {
     pk: `${pk}-order-recipe`,
     order: `${pk}-order`,
     recipe: `${pk}-recipe`,
+    unit_price: 10,
+    unit_cost: 0.32,
     is_synced: false,
   });
   await db.orderIngredients.add({
@@ -65,6 +67,8 @@ async function seedRestaurant(pk: string) {
     order_recipe: `${pk}-order-recipe`,
     ingredient: `${pk}-ingredient`,
     action_type: "ADD",
+    extra_price: 0,
+    extra_cost: 0,
     is_synced: false,
   });
 }

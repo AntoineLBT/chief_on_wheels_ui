@@ -54,18 +54,23 @@ export interface RecipeIngredient {
   quantity: number;
 }
 
-interface OrderRecipe {
+// Prices and costs are snapshots taken at order creation (see utils/order).
+export interface OrderRecipe {
   pk: string;
   order: string;
   recipe: string;
+  unit_price: number;
+  unit_cost: number;
   is_synced: boolean;
 }
 
-interface OrderIngredient {
+export interface OrderIngredient {
   pk: string;
   order_recipe: string;
   ingredient: string;
   action_type: "ADD" | "REMOVE";
+  extra_price: number;
+  extra_cost: number;
   is_synced: boolean;
 }
 
