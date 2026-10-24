@@ -7,13 +7,29 @@ import {
   db,
 } from "@/services/db";
 
-interface FullRecipe extends Recipe {
-  recipe_ingredients: RecipeIngredient[];
+/** A recipe as the API serves it: lines nested without `recipe`, plus `cost`. */
+export interface ApiRecipe extends Recipe {
+  recipe_ingredients: Omit<RecipeIngredient, "recipe">[];
+  cost: number;
+}
+
+// The cost is dropped: it would go stale when an ingredient price changes,
+// so the UI always recomputes it from the cached ingredients.
+export function fromApiRecipe({
+  recipe_ingredients,
+  cost: _,
+  ...recipe
+}: ApiRecipe) {
+  const lines: RecipeIngredient[] = recipe_ingredients.map((line) => ({
+    ...line,
+    recipe: recipe.pk,
+  }));
+  return { recipe, lines };
 }
 
 async function fetchCatalogue(restaurantPk: string) {
   const [recipesRes, ingredientsRes] = await Promise.all([
-    api.get<FullRecipe[]>(`/restaurants/${restaurantPk}/recipes/`),
+    api.get<ApiRecipe[]>(`/restaurants/${restaurantPk}/recipes/`),
     api.get<Ingredient[]>(`/restaurants/${restaurantPk}/ingredients/`),
   ]);
   return { fullRecipes: recipesRes.data, ingredients: ingredientsRes.data };
@@ -26,9 +42,9 @@ export async function load() {
     restaurants.map((r) => fetchCatalogue(r.pk)),
   );
 
-  const fullRecipes = catalogues.flatMap((c) => c.fullRecipes);
-  const recipeIngredients = fullRecipes.flatMap((r) => r.recipe_ingredients);
-  const recipes = fullRecipes.map(({ recipe_ingredients: _, ...r }) => r);
+  const split = catalogues.flatMap((c) => c.fullRecipes.map(fromApiRecipe));
+  const recipes = split.map((r) => r.recipe);
+  const recipeIngredients = split.flatMap((r) => r.lines);
   const ingredients = catalogues.flatMap((c) => c.ingredients);
 
   const catalogueTables = [

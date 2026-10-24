@@ -29,6 +29,8 @@ export interface Recipe {
   restaurant: string;
   name: string;
   price: number;
+  /** Inactive recipes stay cached but are hidden from order creation. */
+  is_active: boolean;
 }
 
 export interface Ingredient {
@@ -48,7 +50,8 @@ export interface RecipeIngredient {
   pk: string;
   recipe: string;
   ingredient: string;
-  quantity_in_g: number;
+  /** In the ingredient's base unit (g / ml / piece). */
+  quantity: number;
 }
 
 interface OrderRecipe {

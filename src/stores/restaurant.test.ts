@@ -31,12 +31,13 @@ async function seedRestaurant(pk: string) {
     restaurant: pk,
     name: "Margherita",
     price: 10,
+    is_active: true,
   });
   await db.recipeIngredients.add({
     pk: `${pk}-recipe-ingredient`,
     recipe: `${pk}-recipe`,
     ingredient: `${pk}-ingredient`,
-    quantity_in_g: 80,
+    quantity: 80,
   });
   await db.shifts.add({
     pk: `${pk}-shift`,

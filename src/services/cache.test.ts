@@ -5,6 +5,7 @@ import { load } from "@/services/cache";
 import { db } from "@/services/db";
 import { useRestaurantStore } from "@/stores/restaurant";
 import { useRecipeStore } from "@/stores/recipe";
+import { useRecipeIngredientStore } from "@/stores/recipeIngredient";
 import { useShiftStore } from "@/stores/shift";
 import { IngredientUnit } from "@/utils/constant";
 import { clearDb } from "@/test/db";
@@ -23,14 +24,11 @@ function recipe(pk: string, restaurantPk: string, name: string) {
     restaurant: restaurantPk,
     name,
     price: 10,
+    is_active: true,
     recipe_ingredients: [
-      {
-        pk: `${pk}-ri`,
-        recipe: pk,
-        ingredient: `${restaurantPk}-tomate`,
-        quantity_in_g: 80,
-      },
+      { pk: `${pk}-ri`, ingredient: `${restaurantPk}-tomate`, quantity: 80 },
     ],
+    cost: 0.32,
   };
 }
 
@@ -85,6 +83,39 @@ describe("cache.load", () => {
     const recipeStore = useRecipeStore();
     await recipeStore.loadRecipes("r2");
     expect(recipeStore.recipes.map((r) => r.name)).toEqual(["Calzone"]);
+  });
+
+  it("caches recipe lines under their recipe, and no cost", async () => {
+    serve({
+      "/restaurants/": [restaurant("r1", "Chez Toto")],
+      "/restaurants/r1/recipes/": [recipe("margherita", "r1", "Margherita")],
+      "/restaurants/r1/ingredients/": [ingredient("r1")],
+    });
+
+    await load();
+
+    const recipeStore = useRecipeStore();
+    await recipeStore.loadRecipes("r1");
+    // The cost is recomputed from the cached ingredients, never cached.
+    expect(recipeStore.recipes).toEqual([
+      {
+        pk: "margherita",
+        restaurant: "r1",
+        name: "Margherita",
+        price: 10,
+        is_active: true,
+      },
+    ]);
+    const recipeIngredientStore = useRecipeIngredientStore();
+    await recipeIngredientStore.loadRecipeIngredients(["margherita"]);
+    expect(recipeIngredientStore.recipeIngredients).toEqual([
+      {
+        pk: "margherita-ri",
+        recipe: "margherita",
+        ingredient: "r1-tomate",
+        quantity: 80,
+      },
+    ]);
   });
 
   it("drops restaurants and recipes that no longer exist on the server", async () => {
