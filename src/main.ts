@@ -1,16 +1,35 @@
 /// <reference types="vite/client" />
-import { createApp } from "vue";
+import { createApp, watchEffect } from "vue";
 import { createPinia } from "pinia";
 import { createVuetify } from "vuetify";
+import { createVueI18nAdapter } from "vuetify/locale/adapters/vue-i18n";
+import { useI18n } from "vue-i18n";
 import { createRouter, createWebHistory } from "vue-router";
 import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
 import App from "./App.vue";
+import { i18n } from "./i18n";
 import { db } from "./services/db";
 import { useAuthStore } from "./stores/auth";
 import { resolveShiftRoute } from "./stores/shift";
 
-const vuetify = createVuetify({ theme: { defaultTheme: "light" } });
+const vuetify = createVuetify({
+  theme: { defaultTheme: "light" },
+  // Vuetify follows the vue-i18n language (pagination, empty states, etc.).
+  // Cast: the adapter types locales as string, ours are narrowed to "fr" | "en".
+  locale: {
+    adapter: createVueI18nAdapter({
+      i18n: i18n as unknown as Parameters<
+        typeof createVueI18nAdapter
+      >[0]["i18n"],
+      useI18n,
+    }),
+  },
+});
+
+watchEffect(() => {
+  document.documentElement.lang = i18n.global.locale.value;
+});
 
 const LAST_RESTAURANT_KEY = "lastRestaurantPk";
 
@@ -92,6 +111,7 @@ router.afterEach((to) => {
 
 const app = createApp(App);
 app.use(createPinia());
+app.use(i18n);
 app.use(vuetify);
 app.use(router);
 app.mount("#app");
