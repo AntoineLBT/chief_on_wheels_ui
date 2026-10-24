@@ -14,7 +14,7 @@
           <v-btn block variant="tonal" @click="addToCart(recipe)">
             <div>
               <div>{{ recipe.name }}</div>
-              <div class="text-caption">{{ recipe.price }}€</div>
+              <div class="text-caption">{{ formatPrice(recipe.price) }}</div>
             </div>
           </v-btn>
         </v-col>
@@ -35,16 +35,27 @@
               <td>
                 <div class="font-weight-medium">{{ line.recipe.name }}</div>
                 <div
-                  v-for="(action, ingredientPk) in line.modifications"
-                  :key="ingredientPk"
+                  v-for="modification in snapshotOf(line).modifications"
+                  :key="modification.ingredient"
                   class="ms-3 text-caption"
-                  :class="action === 'ADD' ? 'text-success' : 'text-error'"
+                  :class="
+                    modification.action_type === 'ADD'
+                      ? 'text-success'
+                      : 'text-error'
+                  "
                 >
-                  {{ action === "ADD" ? "+" : "-" }}
-                  {{ ingredientStore.getIngredient(String(ingredientPk)).name }}
+                  {{ modification.action_type === "ADD" ? "+" : "-" }}
+                  {{
+                    ingredientStore.getIngredient(modification.ingredient).name
+                  }}
+                  <span v-if="modification.extra_price">
+                    ({{ formatPrice(modification.extra_price) }})</span
+                  >
                 </div>
               </td>
-              <td class="text-right">{{ line.recipe.price }}€</td>
+              <td class="text-right">
+                {{ formatPrice(orderTotal([snapshotOf(line)])) }}
+              </td>
               <td>
                 <div class="d-flex justify-end">
                   <v-btn
@@ -112,7 +123,7 @@
             cols="4"
             class="d-flex justify-end align-center text-h5 font-weight-bold"
           >
-            {{ total }}€
+            {{ formatPrice(total) }}
           </v-col>
         </v-row>
       </v-card-text>
@@ -139,12 +150,30 @@
         <v-checkbox
           v-for="ingredient in ingredientStore.ingredients"
           :key="ingredient.pk"
-          :label="ingredient.name"
           :model-value="isIngredientChecked(ingredient.pk)"
           density="compact"
           hide-details
           @update:model-value="onToggleIngredient(ingredient.pk, $event!)"
-        />
+        >
+          <template #label>
+            {{ ingredient.name }}
+            <!-- Only adding an extra is charged, not keeping a base ingredient. -->
+            <v-chip
+              v-if="
+                ingredient.has_extra &&
+                !recipeIngredientStore.isDefaultIngredient(
+                  ingredient.pk,
+                  editingLine.recipe.pk,
+                )
+              "
+              size="x-small"
+              color="primary"
+              variant="tonal"
+              class="ms-2"
+              >+{{ formatPrice(ingredient.extra_price!) }}</v-chip
+            >
+          </template>
+        </v-checkbox>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -163,6 +192,8 @@ import { useOrderStore, type CartLine } from "@/stores/order";
 import { useRecipeStore } from "@/stores/recipe";
 import { useShiftStore } from "@/stores/shift";
 import { computed, onMounted, ref } from "vue";
+import { formatPrice } from "@/utils/format";
+import { orderTotal, snapshotLine } from "@/utils/order";
 import { useRecipeIngredientStore } from "../stores/recipeIngredient";
 
 const props = defineProps<{ shiftPk: string; order?: Order }>();
@@ -189,9 +220,18 @@ const isEditRecipeOpen = ref(false);
 const editingLine = ref<CartLine>();
 const submitted = ref(false);
 
-const total = computed(() =>
-  cartLines.value.reduce((sum, l) => sum + l.recipe.price, 0),
+// The same snapshot the store will freeze: the customer sees what is charged.
+const ingredientsByPk = computed(
+  () => new Map(ingredientStore.ingredients.map((i) => [i.pk, i])),
 );
+function snapshotOf(line: CartLine) {
+  return snapshotLine(
+    line,
+    recipeIngredientStore.recipeIngredients,
+    ingredientsByPk.value,
+  );
+}
+const total = computed(() => orderTotal(cartLines.value.map(snapshotOf)));
 
 const isValid = computed(
   () =>
