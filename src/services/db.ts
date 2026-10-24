@@ -12,6 +12,8 @@ export interface Shift {
   restaurant: string;
   date: string;
   ended_at: string | null;
+  /** The restaurant rate when the shift started, so accounting never changes. */
+  vat_rate: number;
   is_synced: boolean;
 }
 

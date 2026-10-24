@@ -17,11 +17,13 @@ export const useShiftStore = defineStore("shift", () => {
   }
 
   async function createShift(restaurantPk: string) {
+    const restaurant = (await db.restaurants.get(restaurantPk))!;
     const shift: Shift = {
       pk: crypto.randomUUID(),
       restaurant: restaurantPk,
       date: new Date().toISOString(),
       ended_at: null,
+      vat_rate: restaurant.vat_rate,
       is_synced: false,
     };
     await db.shifts.add(shift);

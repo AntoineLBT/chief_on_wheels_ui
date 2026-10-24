@@ -158,6 +158,7 @@ describe("cache.load", () => {
       restaurant: "r1",
       date: "2026-10-18T10:00:00.000Z",
       ended_at: null,
+      vat_rate: 0,
       is_synced: false,
     });
     serve({

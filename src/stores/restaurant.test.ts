@@ -44,6 +44,7 @@ async function seedRestaurant(pk: string) {
     restaurant: pk,
     date: "2026-10-18T10:00:00.000Z",
     ended_at: null,
+    vat_rate: 0,
     is_synced: false,
   });
   await db.orders.add({
@@ -182,6 +183,7 @@ describe("useRestaurantStore", () => {
       restaurant,
       date: "2026-10-18T10:00:00.000Z",
       ended_at: null,
+      vat_rate: 0,
       is_synced,
     });
     await db.shifts.bulkAdd([

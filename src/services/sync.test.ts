@@ -21,6 +21,7 @@ describe("sync", () => {
       restaurant: "r1",
       date: "2026-10-24T10:00:00.000Z",
       ended_at: null,
+      vat_rate: 5.5,
       is_synced: false,
     });
     await db.orders.add({
@@ -54,6 +55,7 @@ describe("sync", () => {
 
     const [, payload] = vi.mocked(api.post).mock.calls[0]!;
     expect(payload).toMatchObject({
+      vat_rate: 5.5,
       orders: [
         {
           order_recipes: [

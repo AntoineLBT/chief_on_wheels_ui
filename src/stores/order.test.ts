@@ -20,6 +20,7 @@ async function seedCatalogue() {
     restaurant: "r1",
     date: "2026-10-24T10:00:00.000Z",
     ended_at: null,
+    vat_rate: 0,
     is_synced: false,
   });
   await db.recipes.add(margherita);

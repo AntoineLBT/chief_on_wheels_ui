@@ -13,6 +13,7 @@ export async function sync() {
       restaurant: shift.restaurant,
       date: shift.date,
       ended_at: shift.ended_at,
+      vat_rate: shift.vat_rate,
       orders: await Promise.all(
         orders.map(async (order) => ({
           id: order.pk,
