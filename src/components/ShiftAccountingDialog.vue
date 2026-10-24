@@ -53,8 +53,7 @@
 import AccountingFigures from "@/components/AccountingFigures.vue";
 import { type ShiftReport, useAccountingStore } from "@/stores/accounting";
 import { OrderStatus } from "@/utils/constant";
-import { formatDate } from "@/utils/date";
-import { formatPrice } from "@/utils/format";
+import { formatDate, formatPrice, formatTime } from "@/utils/format";
 import { computed, onMounted, ref } from "vue";
 
 // Mounted afresh on each opening (keyed by the parent), so no manual reset.
@@ -70,13 +69,6 @@ const error = ref("");
 const title = computed(() =>
   report.value ? `Shift of ${formatDate(report.value.start)}` : "Shift",
 );
-
-function formatTime(isoDateTime: string) {
-  return new Date(isoDateTime).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 onMounted(async () => {
   try {

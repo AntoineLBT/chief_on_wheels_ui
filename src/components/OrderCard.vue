@@ -14,12 +14,7 @@
       </v-card-title>
       <template #append>
         <v-chip :color="statusColor" size="small" variant="tonal">
-          {{
-            new Date(order.picking_time).toLocaleTimeString(
-              _navigator.language,
-              { hour: "2-digit", minute: "2-digit" },
-            )
-          }}
+          {{ formatTime(order.picking_time) }}
         </v-chip>
       </template>
     </v-card-item>
@@ -79,14 +74,13 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
-import { formatPrice } from "@/utils/format";
+import { formatPrice, formatTime } from "@/utils/format";
 import { orderTotal } from "@/utils/order";
 import { OrderStatus } from "@/utils/constant";
 
 const orderStore = useOrderStore();
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ open: [] }>();
-const _navigator = navigator;
 
 const lines = ref<OrderLine[]>([]);
 

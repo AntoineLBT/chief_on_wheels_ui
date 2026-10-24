@@ -87,6 +87,7 @@ import { useOrderStore } from "@/stores/order";
 import { useShiftStore } from "@/stores/shift";
 import { useSyncStore } from "@/stores/sync";
 import { OrderStatus } from "@/utils/constant";
+import { formatTime } from "@/utils/format";
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -104,13 +105,6 @@ const { isOnline } = useOnlineStatus();
 
 const restaurant = ref<Restaurant>();
 const shift = ref<Shift>();
-
-function formatTime(isoDateTime: string) {
-  return new Date(isoDateTime).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 // The board loads the orders of this shift into the order store.
 const unfinishedCount = computed(

@@ -7,12 +7,7 @@
       <v-card-title>{{ order.customer_name }}</v-card-title>
       <v-card-subtitle>
         Picking at
-        {{
-          new Date(order.picking_time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        }}
+        {{ formatTime(order.picking_time) }}
       </v-card-subtitle>
     </v-card-item>
 
@@ -97,7 +92,7 @@
 import { computed, onMounted, ref } from "vue";
 import { type Order } from "@/services/db";
 import { useOrderStore, type OrderLine } from "@/stores/order";
-import { formatPrice } from "@/utils/format";
+import { formatPrice, formatTime } from "@/utils/format";
 import { orderTotal } from "@/utils/order";
 import { OrderStatus } from "@/utils/constant";
 

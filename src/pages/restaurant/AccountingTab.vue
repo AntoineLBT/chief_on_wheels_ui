@@ -136,7 +136,8 @@ import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useAccountingStore } from "@/stores/accounting";
 import { useRestaurantStore } from "@/stores/restaurant";
 import { useSyncStore } from "@/stores/sync";
-import { formatDate, localIsoDate } from "@/utils/date";
+import { localIsoDate } from "@/utils/date";
+import { formatDate, formatMonth } from "@/utils/format";
 import { type Period, periodRange, stepPeriod } from "@/utils/period";
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
@@ -186,13 +187,6 @@ watch(
   },
   { immediate: true },
 );
-
-function formatMonth(isoDate: string) {
-  return new Date(`${isoDate}T00:00:00`).toLocaleDateString([], {
-    month: "long",
-    year: "numeric",
-  });
-}
 
 const periodLabel = computed(() => {
   const { start, end } = periodRange(period.value, date.value);
