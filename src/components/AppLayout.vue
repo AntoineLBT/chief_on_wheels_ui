@@ -65,6 +65,17 @@
               @click="setFontSize(option.value)"
             ></v-list-item>
             <v-divider></v-divider>
+            <v-list-subheader>{{ t("language.label") }}</v-list-subheader>
+            <v-list-item
+              v-for="option in locales"
+              :key="option"
+              :title="t(`language.${option}`)"
+              prepend-icon="mdi-translate"
+              :active="locale === option"
+              active-color="primary"
+              @click="setLocale(option)"
+            ></v-list-item>
+            <v-divider></v-divider>
             <v-list-item
               :title="t('layout.logout')"
               prepend-icon="mdi-logout"
@@ -118,6 +129,7 @@
 <script setup lang="ts">
 import NewRestaurantDialog from "@/components/NewRestaurantDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
+import { locales, setLocale } from "@/i18n";
 import { useAuthStore } from "@/stores/auth";
 import type { Shift } from "@/services/db";
 import { useRestaurantStore } from "@/stores/restaurant";
@@ -133,7 +145,7 @@ const restaurantStore = useRestaurantStore();
 const router = useRouter();
 const route = useRoute();
 const { isOnline } = useOnlineStatus();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // null lets Vuetify open the drawer on large screens and close it on mobile.
 const isDrawerOpen = ref<boolean | null>(null);
