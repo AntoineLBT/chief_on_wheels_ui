@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
 import { type Shift, db } from "@/services/db";
 import { OrderStatus } from "@/utils/constant";
 
@@ -28,19 +27,6 @@ export async function resolveShiftRoute(restaurantPk: string, shiftPk: string) {
 }
 
 export const useShiftStore = defineStore("shift", () => {
-  const shifts = ref<Shift[]>([]);
-
-  const activeShift = computed(() =>
-    shifts.value.find((s) => s.ended_at === null),
-  );
-
-  async function loadShifts(restaurantPk: string) {
-    shifts.value = await db.shifts
-      .where("restaurant")
-      .equals(restaurantPk)
-      .toArray();
-  }
-
   async function currentOpenShift(restaurantPk: string) {
     return findOpenShift(restaurantPk);
   }
@@ -58,7 +44,6 @@ export const useShiftStore = defineStore("shift", () => {
       is_synced: false,
     };
     await db.shifts.add(shift);
-    shifts.value.push(shift);
     return shift;
   }
 
@@ -74,8 +59,6 @@ export const useShiftStore = defineStore("shift", () => {
       }
       await db.shifts.update(shiftPk, { ended_at });
     });
-    const shift = shifts.value.find((s) => s.pk === shiftPk);
-    if (shift) shift.ended_at = ended_at;
   }
 
   async function getShift(pk: string) {
@@ -83,9 +66,6 @@ export const useShiftStore = defineStore("shift", () => {
   }
 
   return {
-    shifts,
-    activeShift,
-    loadShifts,
     currentOpenShift,
     startShift,
     endShift,

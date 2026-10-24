@@ -53,7 +53,6 @@ const router = createRouter({
         },
       ],
     },
-    { path: "/shift", component: () => import("@/pages/ShiftListPage.vue") },
     {
       // Top-level: full screen, outside RestaurantPage and its sidebar.
       path: "/restaurants/:restaurantId/shifts/:shiftId",
