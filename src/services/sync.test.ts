@@ -20,7 +20,7 @@ describe("sync", () => {
       pk: "s1",
       restaurant: "r1",
       date: "2026-10-24T10:00:00.000Z",
-      ended_at: null,
+      ended_at: "2026-10-24T18:00:00.000Z",
       vat_rate: 5.5,
       is_synced: false,
     });
@@ -71,5 +71,28 @@ describe("sync", () => {
         },
       ],
     });
+  });
+
+  it("only sends closed shifts", async () => {
+    const shift = (pk: string, ended_at: string | null) => ({
+      pk,
+      restaurant: "r1",
+      date: "2026-10-24T10:00:00.000Z",
+      ended_at,
+      vat_rate: 0,
+      is_synced: false,
+    });
+    await db.shifts.bulkAdd([
+      shift("closed", "2026-10-24T18:00:00.000Z"),
+      shift("open", null),
+    ]);
+    vi.mocked(api.post).mockResolvedValue({ status: 201 });
+
+    await sync();
+
+    const sent = vi.mocked(api.post).mock.calls.map(([, payload]) => payload);
+    expect(sent).toEqual([expect.objectContaining({ id: "closed" })]);
+    expect((await db.shifts.get("closed"))!.is_synced).toBe(true);
+    expect((await db.shifts.get("open"))!.is_synced).toBe(false);
   });
 });

@@ -1,9 +1,14 @@
-import { db } from "@/services/db";
+import { db, type Shift } from "@/services/db";
 import api from "./apiClient";
+
+/** Only closed shifts are synced: once on the server, a shift never changes. */
+export function isPendingSync(shift: Shift) {
+  return !shift.is_synced && shift.ended_at !== null;
+}
 
 export async function sync() {
   const all = await db.shifts.toArray();
-  const unSyncedShifts = all.filter((s) => !s.is_synced);
+  const unSyncedShifts = all.filter(isPendingSync);
 
   for (const shift of unSyncedShifts) {
     const orders = await db.orders.where("shift").equals(shift.pk).toArray();

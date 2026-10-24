@@ -102,7 +102,7 @@ const sortedShifts = computed(() =>
 
 async function onCreateShift() {
   if (!restaurantPk.value) return;
-  const newShift = await shiftStore.createShift(restaurantPk.value);
+  const newShift = await shiftStore.startShift(restaurantPk.value);
   router.push(`/shift/${newShift.pk}`);
 }
 
