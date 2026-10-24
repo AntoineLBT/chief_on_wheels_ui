@@ -1,6 +1,15 @@
 <template>
   <div class="d-flex align-center mb-4">
     <div class="text-h6">Recipes</div>
+    <v-spacer></v-spacer>
+    <v-btn
+      color="primary"
+      variant="tonal"
+      prepend-icon="mdi-plus"
+      :disabled="!isOnline"
+      @click="openForm(null)"
+      >New recipe</v-btn
+    >
   </div>
 
   <v-alert
@@ -47,20 +56,39 @@
             :color="row.recipe.is_active ? 'success' : undefined"
             >{{ row.recipe.is_active ? "Active" : "Inactive" }}</v-chip
           >
+          <v-btn
+            icon="mdi-pencil-outline"
+            variant="text"
+            size="small"
+            class="ml-2"
+            :disabled="!isOnline"
+            @click="openForm(row.recipe)"
+          ></v-btn>
         </td>
       </tr>
     </tbody>
   </v-table>
+
+  <v-dialog v-model="isFormOpen" fullscreen>
+    <RecipeDialog
+      :key="formKey"
+      :restaurant-pk="restaurantPk"
+      :recipe="editedRecipe"
+      @close="closeForm"
+    ></RecipeDialog>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
+import RecipeDialog from "@/components/RecipeDialog.vue";
 import { useOnlineStatus } from "@/composables/useOnlineStatus";
 import { useIngredientStore } from "@/stores/ingredient";
 import { useRecipeStore } from "@/stores/recipe";
 import { useRecipeIngredientStore } from "@/stores/recipeIngredient";
 import { recipeCoefficient, recipeCost, recipeMargin } from "@/utils/cost";
 import { formatCoefficient, formatPrice } from "@/utils/format";
-import { computed, watch } from "vue";
+import type { Recipe } from "@/services/db";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -103,4 +131,20 @@ const rows = computed(() =>
       };
     }),
 );
+
+const isFormOpen = ref(false);
+const formKey = ref(0);
+const editedRecipe = ref<Recipe | null>(null);
+
+function openForm(recipe: Recipe | null) {
+  editedRecipe.value = recipe;
+  formKey.value++;
+  isFormOpen.value = true;
+}
+
+// The store wrote the new lines to Dexie: reload them for the cost column.
+async function closeForm() {
+  isFormOpen.value = false;
+  await load(restaurantPk.value);
+}
 </script>
