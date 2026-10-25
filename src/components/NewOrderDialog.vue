@@ -117,7 +117,22 @@
                 activator="parent"
                 min-width="0"
               >
-                <v-time-picker v-model="pickingTime"></v-time-picker>
+                <v-card>
+                  <v-card-text class="d-flex align-center justify-center">
+                    <TimeWheel v-model="pickingHours" :values="HOURS" />
+                    <span class="text-h5 mx-2">:</span>
+                    <TimeWheel v-model="pickingMinutes" :values="MINUTES" />
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      color="primary"
+                      variant="tonal"
+                      @click="showMenu = false"
+                      >{{ t("common.done") }}</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
               </v-menu>
             </v-text-field>
           </v-col>
@@ -198,11 +213,20 @@ import { useIngredientStore } from "@/stores/ingredient";
 import { useOrderStore, type CartLine } from "@/stores/order";
 import { useRecipeStore } from "@/stores/recipe";
 import { useShiftStore } from "@/stores/shift";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatPrice } from "@/utils/format";
 import { orderTotal, snapshotLine } from "@/utils/order";
 import { useRecipeIngredientStore } from "../stores/recipeIngredient";
+import { ceilToMinuteStep } from "@/utils/date";
+import TimeWheel from "./TimeWheel.vue";
+
+const MINUTE_STEP = 5;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = Array.from(
+  { length: 60 / MINUTE_STEP },
+  (_, i) => i * MINUTE_STEP,
+);
 
 const props = defineProps<{ shiftPk: string; order?: Order }>();
 const emit = defineEmits<{ close: [] }>();
@@ -225,6 +249,28 @@ const cartLines = ref<CartLine[]>([]);
 const customerName = ref("");
 const pickingTime = ref("");
 const showMenu = ref(false);
+
+function toPickingTime(hours: number, minutes: number) {
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+const pickingHours = computed({
+  get: () => Number(pickingTime.value.split(":")[0]),
+  set: (hours) =>
+    (pickingTime.value = toPickingTime(hours, pickingMinutes.value)),
+});
+const pickingMinutes = computed({
+  get: () => Number(pickingTime.value.split(":")[1]),
+  set: (minutes) =>
+    (pickingTime.value = toPickingTime(pickingHours.value, minutes)),
+});
+
+// Opening the wheels on an empty field proposes the next 5-minute slot.
+watch(showMenu, (isOpen) => {
+  if (isOpen && !pickingTime.value) {
+    const { hours, minutes } = ceilToMinuteStep(new Date(), MINUTE_STEP);
+    pickingTime.value = toPickingTime(hours, minutes);
+  }
+});
 const isEditRecipeOpen = ref(false);
 const editingLine = ref<CartLine>();
 const submitted = ref(false);
@@ -319,7 +365,7 @@ onMounted(async () => {
   if (props.order) {
     customerName.value = props.order.customer_name;
     const d = new Date(props.order.picking_time);
-    pickingTime.value = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    pickingTime.value = toPickingTime(d.getHours(), d.getMinutes());
     const lines = await orderStore.loadOrderLines(props.order.pk);
     cartLines.value = lines.map((l) => ({
       id: crypto.randomUUID(),
