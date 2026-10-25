@@ -35,7 +35,7 @@ const fr: typeof en = {
   count: {
     orders: "{n} commande | {n} commandes",
     shifts: "{n} shift | {n} shifts",
-    pizzas: "{n} pizza | {n} pizzas",
+    dish: "{n} plat | {n} plats",
   },
 
   units: { KG: "kg", L: "l", UNIT: "pièce" },

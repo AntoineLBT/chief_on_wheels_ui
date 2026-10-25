@@ -34,7 +34,7 @@ export default {
   count: {
     orders: "{n} order | {n} orders",
     shifts: "{n} shift | {n} shifts",
-    pizzas: "{n} pizza | {n} pizzas",
+    dish: "{n} dish | {n} dishes",
   },
 
   units: { KG: "kg", L: "l", UNIT: "piece" },

@@ -21,8 +21,8 @@
 
     <v-card-text class="pt-0">
       <div v-if="order.status === OrderStatus.todo" class="text-body-2">
-        <v-icon icon="mdi-pizza" size="small" class="me-1"></v-icon>
-        {{ t("count.pizzas", lines.length) }}
+        <v-icon icon="mdi-food" size="small" class="me-1"></v-icon>
+        {{ t("count.dish", lines.length) }}
       </div>
 
       <div v-else-if="order.status === OrderStatus.inProgress">

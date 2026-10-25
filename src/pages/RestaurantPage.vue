@@ -32,7 +32,7 @@ const tabs = [
   {
     name: "restaurant-recipes",
     labelKey: "restaurant.tabs.recipes",
-    icon: "mdi-pizza",
+    icon: "mdi-food",
   },
   {
     name: "restaurant-accounting",

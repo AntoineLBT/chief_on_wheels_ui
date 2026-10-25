@@ -11,7 +11,7 @@
     <v-card-text>
       <v-row>
         <v-col v-for="recipe in activeRecipes" :key="recipe.pk" cols="3">
-          <v-btn block variant="tonal" @click="addToCart(recipe)">
+          <v-btn block variant="tonal" size="large" @click="addToCart(recipe)">
             <div>
               <div>{{ recipe.name }}</div>
               <div class="text-caption">{{ formatPrice(recipe.price) }}</div>
@@ -34,7 +34,7 @@
           <tbody>
             <tr v-for="line in cartLines" :key="line.id">
               <td>
-                <div class="font-weight-medium">{{ line.recipe.name }}</div>
+                <div class="text-h6">{{ line.recipe.name }}</div>
                 <div
                   v-for="modification in snapshotOf(line).modifications"
                   :key="modification.ingredient"
@@ -61,9 +61,10 @@
                 <div class="d-flex justify-end">
                   <v-btn
                     icon="mdi-pencil"
-                    variant="text"
+                    variant="tonal"
                     density="comfortable"
-                    size="small"
+                    size="large"
+                    class="me-2 mb-1 mt-1"
                     @click="
                       () => {
                         editingLine = line;
@@ -73,9 +74,10 @@
                   ></v-btn>
                   <v-btn
                     icon="mdi-close"
-                    variant="text"
+                    variant="tonal"
                     density="comfortable"
-                    size="small"
+                    class="mb-2 mt-1"
+                    size="large"
                     @click="removeFromCart(line.id)"
                   ></v-btn>
                 </div>
@@ -98,7 +100,6 @@
             <v-text-field
               v-model="customerName"
               :label="t('orders.customerName')"
-              density="compact"
               :error="submitted && !customerName"
               error-messages=""
             ></v-text-field>
@@ -108,7 +109,6 @@
               :model-value="pickingTime"
               :label="t('orders.pickingTime')"
               readonly
-              density="compact"
               :error="submitted && !pickingTime"
             >
               <v-menu

@@ -23,7 +23,7 @@
 
   <v-empty-state
     v-if="!rows.length"
-    icon="mdi-pizza"
+    icon="mdi-food"
     :title="t('recipes.empty')"
   ></v-empty-state>
 

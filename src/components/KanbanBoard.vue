@@ -1,7 +1,8 @@
 <template>
-  <v-row class="justify-end mb-2">
+  <v-row class="justify-center mb-2">
     <v-col cols="auto">
       <v-btn
+        size="x-large"
         prepend-icon="mdi-plus-circle-outline"
         color="primary"
         @click="isCreateDialogOpen = true"
