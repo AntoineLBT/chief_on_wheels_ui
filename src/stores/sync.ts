@@ -14,9 +14,14 @@ export const useSyncStore = defineStore("sync", () => {
 
   async function syncAll() {
     isSyncing.value = true;
-    await sync();
-    await refreshPendingCount();
-    isSyncing.value = false;
+    try {
+      await sync();
+    } finally {
+      // Also after a failure: shifts sent before it are synced, and the sync
+      // button must not stay stuck in its loading state.
+      await refreshPendingCount();
+      isSyncing.value = false;
+    }
   }
 
   return { isSyncing, pendingCount, refreshPendingCount, syncAll };
