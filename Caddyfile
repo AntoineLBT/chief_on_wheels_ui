@@ -1,0 +1,28 @@
+# Internal server, HTTP only: TLS is terminated by the front Caddy.
+:80 {
+	root * /srv
+	encode zstd gzip
+
+	# Hashed file names: cached forever. No SPA fallback here, so a chunk
+	# removed by a deploy is a 404, never index.html cached as immutable.
+	handle /assets/* {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# index.html, sw.js, workbox-*.js, manifest, icons: revalidated on every
+	# load, so the tablet never stays stuck on an old service worker.
+	# try_files is the SPA fallback for deep links (/restaurants/<id>/...).
+	handle {
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	# A 404 must never be cached: a rollback (older UI_TAG) brings back
+	# older chunk names.
+	handle_errors {
+		header Cache-Control "no-store"
+		respond "{err.status_code} {err.status_text}"
+	}
+}
