@@ -9,6 +9,7 @@ import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
 import App from "./App.vue";
 import { i18n } from "./i18n";
+import { onAuthFailure } from "./services/apiClient";
 import { db } from "./services/db";
 import { useAuthStore } from "./stores/auth";
 import { resolveShiftRoute } from "./stores/shift";
@@ -100,6 +101,13 @@ router.beforeEach(async (to) => {
     localStorage.removeItem(LAST_RESTAURANT_KEY);
     return "/";
   }
+});
+
+// Refresh token rejected (90 days): clear the store too, otherwise
+// isAuthenticated stays true and the guard lets every route through.
+onAuthFailure(() => {
+  useAuthStore().logout();
+  void router.push("/login");
 });
 
 router.afterEach((to) => {
