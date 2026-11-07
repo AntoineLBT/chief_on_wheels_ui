@@ -12,8 +12,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Chief on Wheels",
-        short_name: "Chief",
+        name: "Chef on Wheels",
+        short_name: "Chef",
         display: "standalone",
         theme_color: "#1565C0",
         background_color: "#ffffff",

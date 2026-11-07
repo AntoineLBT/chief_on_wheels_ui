@@ -87,6 +87,8 @@ class ChiefDatabase extends Dexie {
   orderIngredients!: Table<OrderIngredient>;
 
   constructor() {
+    // Never rename: a new name opens an empty database and hides unsynced
+    // shifts stored under the old one (the app is now "Chef on Wheels").
     super("chief");
     this.version(1).stores({
       restaurants: "pk",

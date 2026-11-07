@@ -8,7 +8,7 @@
       </template>
       <v-app-bar-title>
         <v-icon icon="mdi-chef-hat" class="me-2"></v-icon>
-        {{ currentRestaurant?.name ?? "Chief on Wheels" }}
+        {{ currentRestaurant?.name ?? "Chef on Wheels" }}
       </v-app-bar-title>
 
       <template #append>
